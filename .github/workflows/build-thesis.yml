@@ -1,0 +1,50 @@
+name: Build Thesis PDF
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: thesis.tex
+          latexmk_use_xelatex: false
+
+      - name: Upload PDF as artifact (PR preview only)
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: thesis-pdf-preview
+          path: thesis.pdf
+
+      - name: Move PDF into output/ (push/dispatch only)
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p output
+          mv thesis.pdf output/thesis.pdf
+
+      - name: Commit and push compiled PDF (push/dispatch only)
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/thesis.pdf
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Auto-build PDF [skip ci]"
+          git push
