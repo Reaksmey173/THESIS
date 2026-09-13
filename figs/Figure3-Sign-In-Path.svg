@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="390" viewBox="0 0 1000 390" font-family="Segoe UI, Calibri, Helvetica, Arial, sans-serif">
+<title>The sign-in path, from authentication in Keycloak to role resolution in the application</title>
+<desc>Keycloak checks the password and returns a token carrying the user's identity and role. A token that carries exactly one valid role gets an eight-hour session; a token carrying no valid role is refused and no session is created.</desc>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<rect x="40" y="80" width="380" height="140" rx="12" fill="none" stroke="#534AB7" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="230" y="106" font-size="17" font-weight="600" fill="#534AB7" text-anchor="middle">Authentication — Keycloak</text>
+
+<rect x="70" y="125" width="150" height="64" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1.8"/>
+<text x="145" y="163" font-size="17" font-weight="600" fill="#26215C" text-anchor="middle">User signs in</text>
+
+<rect x="250" y="125" width="150" height="64" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1.8"/>
+<text x="325" y="152" font-size="17" font-weight="600" fill="#26215C" text-anchor="middle">Keycloak</text>
+<text x="325" y="174" font-size="13" fill="#534AB7" text-anchor="middle">passwords, lockout</text>
+
+<line x1="224" y1="157" x2="246" y2="157" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<text x="490" y="147" font-size="14" fill="#5F5E5A" text-anchor="middle">token</text>
+<line x1="424" y1="157" x2="556" y2="157" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<rect x="560" y="80" width="400" height="235" rx="12" fill="none" stroke="#1D9E75" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="760" y="106" font-size="17" font-weight="600" fill="#0F6E56" text-anchor="middle">Authorisation — the application</text>
+
+<rect x="585" y="125" width="350" height="64" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1.8"/>
+<text x="760" y="152" font-size="17" font-weight="600" fill="#2C2C2A" text-anchor="middle">Resolve the role from the token</text>
+<text x="760" y="174" font-size="13" fill="#5F5E5A" text-anchor="middle">one of five roles, or none</text>
+
+<line x1="667" y1="193" x2="667" y2="221" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+<line x1="852" y1="193" x2="852" y2="221" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<rect x="585" y="225" width="165" height="70" rx="10" fill="#EAF3DE" stroke="#639922" stroke-width="1.8"/>
+<text x="667" y="252" font-size="17" font-weight="600" fill="#173404" text-anchor="middle">Session issued</text>
+<text x="667" y="272" font-size="13" fill="#3B6D11" text-anchor="middle">one valid role</text>
+<text x="667" y="288" font-size="13" fill="#3B6D11" text-anchor="middle">eight-hour token</text>
+
+<rect x="770" y="225" width="165" height="70" rx="10" fill="#FCEBEB" stroke="#E24B4A" stroke-width="1.8"/>
+<text x="852" y="252" font-size="17" font-weight="600" fill="#501313" text-anchor="middle">Refused</text>
+<text x="852" y="272" font-size="13" fill="#A32D2D" text-anchor="middle">no valid role</text>
+<text x="852" y="288" font-size="13" fill="#A32D2D" text-anchor="middle">no session created</text>
+
+<text x="500" y="350" font-size="15" fill="#5F5E5A" text-anchor="middle">The application holds no passwords. Roles are held in Keycloak and nowhere else.</text>
+<text x="500" y="372" font-size="15" fill="#5F5E5A" text-anchor="middle">A refusal is recorded only in Keycloak's own event log, because sign-in stops before the application writes one.</text>
+</svg>

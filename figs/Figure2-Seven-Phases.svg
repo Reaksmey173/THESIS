@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="930" viewBox="0 0 1000 930" font-family="Segoe UI, Calibri, Helvetica, Arial, sans-serif">
+<title>The seven phases of the security work under the NIST Cybersecurity Framework 2.0</title>
+<desc>Seven phases from planning and requirements through to post-deployment validation, each mapped to functions of the NIST Cybersecurity Framework. Phases three to five were revisited as checking changed earlier decisions. Phases six and seven were not complete at the time of writing.</desc>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<marker id="arp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="#1D9E75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<rect x="100" y="30" width="820" height="58" rx="10" fill="#F1EFE8" stroke="#888780" stroke-width="1.5"/>
+<text x="510" y="66" font-size="21" font-weight="600" fill="#2C2C2A" text-anchor="middle">Umbrella: NIST Cybersecurity Framework 2.0</text>
+
+<rect x="100" y="120" width="820" height="88" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1.8"/>
+<text x="510" y="150" font-size="20" font-weight="600" fill="#26215C" text-anchor="middle">Phase 1: Planning and requirements</text>
+<text x="510" y="174" font-size="15" fill="#534AB7" text-anchor="middle">Stakeholders, local hosting constraint, threat model</text>
+<text x="510" y="195" font-size="15" fill="#534AB7" text-anchor="middle">Frameworks: NIST CSF (Govern, Identify), STRIDE</text>
+
+<rect x="100" y="225" width="820" height="88" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1.8"/>
+<text x="510" y="255" font-size="20" font-weight="600" fill="#26215C" text-anchor="middle">Phase 2: Research and tool selection</text>
+<text x="510" y="279" font-size="15" fill="#534AB7" text-anchor="middle">Entra ID trial compared with locally hosted Keycloak</text>
+<text x="510" y="300" font-size="15" fill="#534AB7" text-anchor="middle">Frameworks: NIST CSF (Identify)</text>
+
+<rect x="100" y="330" width="820" height="88" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.8"/>
+<text x="510" y="360" font-size="20" font-weight="600" fill="#04342C" text-anchor="middle">Phase 3: Design</text>
+<text x="510" y="384" font-size="15" fill="#0F6E56" text-anchor="middle">Permissions matrix, combined role and attribute model</text>
+<text x="510" y="405" font-size="15" fill="#0F6E56" text-anchor="middle">Frameworks: NIST SP 800-162, HL7 FHIR, STRIDE, NIST CSF (Protect)</text>
+
+<rect x="100" y="435" width="820" height="88" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.8"/>
+<text x="510" y="465" font-size="20" font-weight="600" fill="#04342C" text-anchor="middle">Phase 4: Implementation</text>
+<text x="510" y="489" font-size="15" fill="#0F6E56" text-anchor="middle">Keycloak deployed locally, sign-in, access rules, audit logging</text>
+<text x="510" y="510" font-size="15" fill="#0F6E56" text-anchor="middle">Frameworks: NIST CSF (Protect, Detect)</text>
+
+<rect x="100" y="540" width="820" height="88" rx="10" fill="#FCEBEB" stroke="#E24B4A" stroke-width="1.8"/>
+<text x="510" y="570" font-size="20" font-weight="600" fill="#501313" text-anchor="middle">Phase 5: Pre-deployment testing</text>
+<text x="510" y="594" font-size="15" fill="#A32D2D" text-anchor="middle">Role-by-role testing, automated scanning, OWASP self-assessment</text>
+<text x="510" y="615" font-size="15" fill="#A32D2D" text-anchor="middle">Frameworks: NIST CSF (Detect), OWASP Top 10:2021, NBC guidelines</text>
+
+<rect x="100" y="645" width="820" height="88" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.8" stroke-dasharray="8 5"/>
+<text x="510" y="675" font-size="20" font-weight="600" fill="#412402" text-anchor="middle">Phase 6: Deployment</text>
+<text x="510" y="699" font-size="15" fill="#854F0B" text-anchor="middle">Readiness summary, handover to the development side, known limitations</text>
+<text x="510" y="720" font-size="15" fill="#854F0B" text-anchor="middle">Frameworks: NIST CSF (Respond)</text>
+
+<rect x="100" y="750" width="820" height="88" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.8" stroke-dasharray="8 5"/>
+<text x="510" y="780" font-size="20" font-weight="600" fill="#412402" text-anchor="middle">Phase 7: Post-deployment validation</text>
+<text x="510" y="804" font-size="15" fill="#854F0B" text-anchor="middle">Container benchmark, formal assessment with IT Security, code review</text>
+<text x="510" y="825" font-size="15" fill="#854F0B" text-anchor="middle">Frameworks: OWASP Testing Guide, CIS Docker Benchmark, NIST CSF (Recover)</text>
+
+<line x1="510" y1="208" x2="510" y2="221" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+<line x1="510" y1="313" x2="510" y2="326" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+<line x1="510" y1="418" x2="510" y2="431" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+<line x1="510" y1="523" x2="510" y2="536" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+<line x1="510" y1="628" x2="510" y2="641" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+<line x1="510" y1="733" x2="510" y2="746" stroke="#5F5E5A" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<path d="M100 584 L58 584 L58 374 L96 374" fill="none" stroke="#1D9E75" stroke-width="1.8" marker-end="url(#arp)"/>
+
+<text x="510" y="880" font-size="16" fill="#5F5E5A" text-anchor="middle">Phases 3 to 5 were revisited as checking changed earlier decisions</text>
+<text x="510" y="904" font-size="16" fill="#5F5E5A" text-anchor="middle">Phases 6 and 7, shown dashed, were not complete when this was written</text>
+</svg>

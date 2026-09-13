@@ -1,29 +1,64 @@
 \chapter{Introduction}
 \label{chap:intro}
-\chaptermark{Optional running chapter heading  test}
+\chaptermark{Introduction}
 
+This chapter introduces the setting of the project and the problem it addresses. It describes how Guarantee of Payment requests were handled at Intercare Hospital before the system was built. It then gives an overview of the hospital and the project, states the objectives of this thesis, and outlines the structure of the chapters that follow.
 
 \section{Background of the Study}
-In this section, provide a general introduction to your research topic. Describe the larger field or industry you are working in, its significance, and why the topic is important. For example, if you're working on robotics or automation, briefly explain how these technologies are transforming industries like manufacturing, construction, or healthcare.
+\label{sec:intro-background}
 
-\section{Company and Team Overview}
-Introduce the company or organization where you conducted your industrial placement. Provide a brief history of the company, its mission, and key areas of focus. Then, describe the team or department you worked with, including its goals and how your project fits within the organization’s objectives. For instance, if you were working with a robotics team, you can explain how your project contributed to the development of new automation systems.
+Hospitals and insurance companies work together through a process known as Guarantee of Payment (GOP). Before a planned admission, the hospital asks the insurer to confirm in writing that it will cover the cost of treatment, so the patient can be treated without paying up front. The request is not a single document but a package: patient details, a clinical description of the planned procedure, statements from the treating doctors, and an itemised cost estimate. Because insurers set their own forms and required fields, assembling that package is manual work that falls on hospital staff, and the effort grows with the number of insurers a hospital works with.
+
+At Intercare Hospital in Phnom Penh, this process was carried out manually, and a single request could pass through four departments before it reached the insurer. The result was slow, inconsistent, and tiring for the people doing it. Chapter \ref{chap:ps} describes that process in detail.
+
+Automating this process removes much of that effort, but it also changes where the risk sits. Information that once lived on paper in a single office now sits in a database that many people can reach across the hospital network. Decisions that were previously made in person, such as who is allowed to confirm a cost or approve a clinical statement, become rules written into software. A GOP request contains both clinical information about a patient and a financial commitment on behalf of the hospital, so a mistake in those rules is not only a privacy problem but a financial one.
+
+Security therefore could not be treated as something added after the system worked. It covers more than one question: who is allowed into the system, what each person may do once inside, what record is kept of what they did, and whether the software and servers the system runs on are themselves safe. These questions had to be answered alongside the workflow rather than after it. This thesis describes the requirements that were identified, the security that was designed and built to meet them, and how the result was tested and revised.
+
+\section{Company Overview}
+\label{sec:intro-company}
+
+Intercare Hospital is a private healthcare provider in Phnom Penh, Cambodia, based at the Olympia Medical Hub Building on Street 161, Veal Vong, 7 Makara. The hospital's stated aim is to become the most trusted healthcare provider in Cambodia, with values organised under a framework called I-CARE, covering innovation, compassion, accountability, responsiveness and empowerment \cite{intercare}.
+
+The hospital opened in 2020 as a general practice clinic and has added services each year since: laboratory and imaging in 2021, maternity, inpatient and emergency care in 2022, and operating theatre services, physiotherapy and a visa health check centre in 2023. Paediatrics, a child wellbeing centre and a set of community clinics under the Intercare Express name followed, with a medical centre in Siem Reap planned \cite{intercare}.
+
+The hospital employs more than two hundred medical professionals, Cambodian and international, representing over twenty nationalities, and treats Cambodian families, expatriates, company employees and travellers. Care is provided in partnership with more than forty insurance providers, which makes the Guarantee of Payment process a routine part of daily work rather than an occasional task \cite{intercare}.
 
 \section{Project Overview}
-Describe the specific project you worked on during your industrial placement. Include the project’s objectives, scope, and any technical challenges you faced. Explain how your project aligns with the company’s broader goals and discuss any expected outcomes or deliverables. For example, your project might involve designing or improving a vision-based welding robot for construction tasks.
+\label{sec:intro-project}
 
-\section{Research Objectives (if any)}
-Clearly define the main objectives of your research or project. What are you trying to accomplish, and what key questions are you attempting to answer? For example, your objective might be to improve the accuracy and efficiency of robotic welding by integrating vision systems into the process.
+This project was carried out within the hospital's Digital Health department, which is responsible for the systems that support clinical and administrative work. The aim was to replace the manual cost estimation and Guarantee of Payment process with a web-based system, so that a request could be prepared, reviewed and sent from one place instead of being assembled by hand across several departments.
+
+The wider effort is planned in three phases. This project delivers Phase 1, built over six months as the internal foundation that later phases can extend without being rebuilt. Phase 1 covers the hospital's own side of the workflow: creating a case from patient and encounter data, building a cost estimate, generating the GOP request and its document output, tracking its status through approval, rejection or revision, and keeping an audit trail. The system does not connect to insurer systems. Finance reviews each case and sends the request from within the system; nothing goes out automatically. The insurer's reply arrives in a staff Outlook mailbox rather than in the system, so Finance records the answer by hand, and a case needing revision is corrected and sent again by the same path. Claims generation and submission belong to later phases. The system's data model follows the HL7 Fast Healthcare Interoperability Resources (FHIR) standard, which shaped several of the security decisions described later. At the time of writing, some parts of this workflow were complete and working, while others were still being finished.
+
+The system was built by a team of three students on industry placement, each from a different major: software engineering, data science and artificial intelligence, and cybersecurity. My major is cybersecurity, and I was responsible for the security of the system. That covered working out what needed to be protected, designing and building the controls to protect it, and testing whether they held. This thesis describes that security work.
+
+The system was built for internal use within the hospital rather than for public access, and is hosted on the hospital's own servers rather than in the cloud. This decision shaped much of the security design, as the responsibility for protecting the system and the environment it runs on stays with the hospital.
+
+\section{Research Objectives}
+\label{sec:intro-objectives}
+
+The general objective of this work was to build security into the Guarantee of Payment system as it was developed, rather than adding it once the system was working. The specific objectives were as follows.
+
+\begin{enumerate}
+    \item To identify what the system needs to protect, and to establish the security requirements of the workflow, including the separations between roles that already exist in hospital practice.
+    \item To select security standards suitable for a small internal health system that can also be extended as the system grows, and to state how far each one is applied.
+    \item To design and implement the security of the system: signing in, what each user may do, how their actions are recorded, and the security of the software the system runs on.
+    \item To evaluate the security before deployment, using both manual testing and automated scanning, and to record what was found.
+    \item To compare what each method detected, and to discuss what that means for verifying access control in systems of this kind.
+\end{enumerate}
 
 \section{Thesis Structure}
-Briefly outline the structure of the thesis, providing a summary of each chapter. For example:
-\begin{itemize}
+\label{sec:intro-structure}
 
-    \item \textbf{Chapter 1: Introduction} – This chapter provides background information on the study, the company, and the research project.
-    \item  \textbf{Chapter 2: Problem Statement} – This chapter identifies the main problem the project aims to solve.
-    \item  \textbf{Chapter 3: Literature Review} – This chapter reviews relevant literature and existing research related to the topic.
-    \item  \textbf{Chapter 4: Methodology} – This chapter describes the methods and techniques used in the research.
-    \item  \textbf{Chapter 5: Results and Discussion} – This chapter presents and analyzes the findings from the research.
-    \item \textbf{Chapter 6: Conclusion and Recommendations} – This chapter concludes the study and offers recommendations based on the findings.
-=
+This thesis is organised into seven chapters.
+
+\begin{itemize}
+    \item Chapter \ref{chap:intro} introduces the setting, the hospital, the project, and the objectives of this work.
+    \item Chapter \ref{chap:ps} describes the problem: how Guarantee of Payment requests were handled manually, what that cost the hospital, and which part of it this project addresses.
+    \item Chapter \ref{chap:lr} reviews existing work on access control models, security standards for health information systems, threat modelling, and how access control is verified.
+    \item Chapter \ref{chap:met} sets out the method, including the frameworks applied and how far each one was used.
+    \item Chapter \ref{chap:impl} describes what was built: how users are identified, the access control model, the audit trail, and the security of the deployment.
+    \item Chapter \ref{chap:result} reports what the verification produced and discusses what those results mean.
+    \item Chapter \ref{chap:conclusion} covers the difficulties encountered, the conclusions drawn, and the work that remains.
 \end{itemize}

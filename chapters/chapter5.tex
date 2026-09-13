@@ -1,5 +1,104 @@
-\chapter{Evaluation and Discussion}
-\label{chap:eval}
+\chapter{Implementation}
+\label{chap:impl}
+\chaptermark{Implementation}
 
+This chapter describes what was built: signing in and how sessions are handled, what each user may do and how that is enforced, how their actions are recorded, and the security of the software the system runs on.
 
-\ldots
+\section{Identity and Access Management}
+\label{sec:impl-iam}
+
+Users sign in through Keycloak, an identity provider running on the hospital's own servers, using OpenID Connect, a standard way for two systems to agree who someone is. The application never sees a password. It sends the user to Keycloak, and Keycloak sends back a token saying who they are and what role they hold. Password rules, account lockout, and the accounts themselves all live in Keycloak.
+
+Roles are held in Keycloak and nowhere else. The application reads the role from the token and keeps no copy of its own. That is why there is no screen for editing permissions: to change what someone may do, an administrator changes their role in Keycloak. Five roles exist, Surgeon, Anaesthetist, Surgical Coordinator, Finance, and System Administrator, and every token must match exactly one of them.
+
+If a token carries no valid role, sign-in is refused. The user is not let in with fewer rights, they are not let in at all. This was not how it worked at first: such a user used to get a working session and could reach every page that asked only for a login. The check now runs in three places: when the user signs in, before any screen appears, and on every request the server receives. The refusal itself is not written to the application's log, because sign-in stops before anything is recorded, so repeated attempts show up only in Keycloak's own log.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figs/Figure3-Sign-In-Path.png}
+  \caption{The sign-in path. Keycloak checks the password and returns a token carrying the user's identity and role. A token with one valid role gets a session; a token with none is refused.}
+  \label{fig:signin-path}
+\end{figure}
+
+Sessions are stateless: the server keeps no list of who is signed in. When someone signs in, the application gives them a token that works for eight hours. The library's default was thirty days, so I shortened it. Because there is no list, a token cannot be cancelled early, it works until it expires. Keycloak keeps its own session alongside this, ending it after twenty minutes of no activity or eight hours in total. The application adds its own twenty-minute idle timeout, with a warning a minute before. But that runs in the browser, not on the server: a script watches the clock and signs the user out, while the server still accepts a request arriving later. It is there for shared computers, not as a limit on the token.
+
+Two of these findings were corrected during this work. Signing out now ends both sessions; it once cleared only the application's cookie, leaving the next person at a shared computer in the previous user's account. The Keycloak session lifetimes were also aligned with the application's, so that neither outlasts the other. What remains is the consequence of the stateless design itself: with no server-side record, a session cannot be withdrawn, idle time cannot be enforced on the server, and disabling an account in Keycloak does not reach a token already issued without a separate synchronisation job.
+
+Account status is enforced in two places. An administrator can enable or disable an account on the application's administration screen, built as part of this work, and cannot disable their own account. A scheduled job also reads each user's status from Keycloak and disables anyone Keycloak reports as disabled. Disabling therefore works from either place, but re-enabling has to be done in both: in Keycloak, so the user can sign in, and on the administration screen, so the application accepts them. The job only ever disables, so it will not restore access on its own. If Keycloak cannot be reached it makes no changes, and it records each account it disables in the audit trail. But nothing on the server starts the job, so it has never run, and that is recorded in Section \ref{sec:conc-future}.
+
+The two places are not recorded equally. Changes made on the application's screen are written to the audit trail. Changes made in Keycloak are not: disabling or enabling a user there takes effect at the next sign-in, because Keycloak refuses or allows the attempt itself, but nothing reaches the application's log. As with a refused sign-in, an investigation has to read both.
+
+One finding here mattered more than it first looked. The session carries the identifier Keycloak issues, while the application's own database uses its own row identifiers for the same people. Checks of whether a case belonged to a particular doctor compared the two directly, and two different kinds of identifiers never match, so doctors could not open their own cases. It appeared as several unrelated faults before the single cause was found: a list showing other people's drafts, a saved draft opening read-only, and errors on writing. This was corrected, and the checks now resolve one identifier to the other before comparing.
+
+\section{Access Control Model}
+\label{sec:impl-access-model}
+
+Access control in this system combines the two models described in Chapter \ref{chap:lr}. Roles carry the decisions that follow a person's job, attributes carry the decisions that depend on a particular case, and the case's position in the workflow carries the decisions that depend on how far the work has progressed.
+
+Mapped onto the four inputs NIST describes \cite{nist80162}, the model uses three of them. Subject attributes are the user's role, taken from the Keycloak token, and whether their account is active. Object attributes are the identifiers of the doctors assigned to a case and the step that case has reached. The rules are the forty-two action rules described below. Environment conditions are not used: no decision in this system depends on the time of day, the location of the request, or the network it arrives from.
+
+\begin{table}[H]
+\centering
+\caption{The five roles and what each is responsible for.}
+\label{tab:roles}
+\begin{tabular}{p{3.6cm}p{9.5cm}}
+\toprule
+\textbf{Role} & \textbf{Responsible for} \\
+\midrule
+Surgeon & Creating a case, entering the clinical description and their own fee \\
+Anaesthetist & Taking an unassigned case from the pool and adding their assessment \\
+Surgical Coordinator & Monitoring progress, and entering information on behalf of a doctor or Finance where needed \\
+Finance & Building and confirming the cost, submitting the case, recording patient consent, finalising it, reviewing and sending the request to the insurer, and recording the insurer's answer \\
+System Administrator & Enabling and disabling accounts, and reading the audit trail \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Forty-two actions are defined across the system, and each has a rule saying which roles may perform it and under what conditions. They fall into four groups: eleven for the case lifecycle, six for finance and the insurer, five for documents and notes, and twenty for reports, administration and reference data. The rules are kept in a separate document, updated as the code changes. It reached its third version during this work, each version following a round of checking.
+
+The three factors work together, not separately. All three must hold, and if any one fails the action is refused. Take one question: may a surgeon edit this case? Using the role alone, the answer is yes, but that would let any surgeon edit any case. Adding assignment narrows it: yes, if the case is theirs. Adding the step narrows it again: yes, if the case is theirs and it has not yet reached Finance. Only the third answer is correct. The step is the least obvious of the three, because it changes the answer for a user who has done nothing: when the anaesthetist finishes their part, the case moves to Finance, and the surgeon becomes read-only. Figure \ref{fig:three-factors} shows the three factors as they are evaluated for one request.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figs/Figure4-Three-Factors-Decision.png}
+  \caption{The three factors evaluated in every access decision. All three must hold; if any one fails, the action is refused.}
+  \label{fig:three-factors}
+\end{figure}
+
+Underneath these rules is a split the hospital already used on paper. The doctors say what treatment is needed and what their own fee is. Finance builds the final price from that, adding or removing items as the case requires, and commits the hospital to the total. Neither does the other's job: a doctor cannot set what the hospital charges, and Finance does not decide what treatment is given. The case's step is what keeps them apart in software. Without it, a doctor could change a figure after Finance had already settled the price.
+
+One exception is allowed on purpose. The Surgical Coordinator may enter information on behalf of another role. This carries over what happened on paper, rather than giving them a new power: the Coordinator always did this, but had to ask the surgeon, the anaesthetist, or Finance first. The system cannot check whether that conversation happened, so it allows the edit and records who made it. The same separation applies to what leaves the hospital; Finance reviews a case before the request is sent, so nothing reaches an insurer without a person having checked it.
+
+Access is decided in one place. A single module checks that the user has a session, that their account is active, and that their role is valid. Where the action needs it, the same module also checks that the case is theirs and has reached the right step. Nearly every address in the system calls it. Not every part uses the full check, though: some ask only whether the role is right, then work out for themselves whether the case belongs to the user. Both agree today. But if the rule is changed in the central module later, whoever changes it has no reason to know a second copy exists, and the two will quietly disagree. Chapter \ref{chap:result} returns to this.
+
+\section{Audit Logging}
+\label{sec:impl-audit}
+
+The audit log records every action that changes a case. An entry holds who acted, the role they held at the time, which case was affected, what was done, when, and which part of the system was used. Refused attempts are recorded too, with the reason. The entry does not record the device or the network address, so it can show that an account acted but not which machine was used.
+
+The record is append-only: entries can be added, but never changed or deleted. This is enforced by the database itself rather than by the application, so no one can change the log, including an administrator. OWASP recommends exactly this for records that need to be trusted \cite{owasp2021}. It is what makes the log usable as evidence, rather than just something to look things up in.
+
+The role is recorded at the moment of the action rather than looked up later. This was corrected during the work: Finance and the Coordinator had both been logged as STAFF, so the record could not show which of them had acted. Stamping the exact role at the time of writing also means that a later change of role does not alter what past entries say.
+
+The administration screen presents a second log alongside it, and the two are not the same thing. The audit log records workflow events, as described above. The activity log records every successful request that passes the access checks, including the request body, so it accumulates patient identifiers and clinical detail as a side effect of recording traffic. It has none of the protection the audit log has: its rows can be changed or deleted, and no retention period is set. Both logs need that protection, and only one has it. This is recorded in Section \ref{sec:conc-future}.
+
+Two limits remain. Neither is a fault; both come from how the system was built. The first is names. The log stores a reference to the user and looks up the name when the record is read, so a change of name would relabel every past entry for that person. Users can no longer rename themselves, but the arrangement itself is unchanged. The second is who may read the log. Administrators open it through the administration screen built as part of this work, and their own actions appear in both logs, so they can see what has been recorded about them. Separating those two responsibilities would mean redesigning who can read what, not fixing a fault.
+
+Four things are not written down. A refusal that means only ``not yet'', submitting a case before it is ready, or deleting one that has moved past draft, comes from the workflow rather than from a permission check, and only permission refusals are written down. A request for a case that does not exist is refused silently. A refused sign-in is recorded nowhere in the application, because sign-in stops before anything is written, so those attempts exist only in Keycloak's log. And nothing at all can be written when the database itself is down.
+
+Nothing checks the log as it fills, and nobody reviews it on a schedule. Refused attempts are written down correctly, but no one is told, so twenty attempts in a row would sit in the table until somebody happened to open it. OWASP renamed this category in 2025 to include alerting for that reason \cite{owasp2025}. Both are recorded in Section \ref{sec:conc-future}, the software that would raise an alert, and the hospital routine that would review the records.
+
+\section{Deployment}
+\label{sec:impl-deployment}
+
+My teammate deployed the application, and the hospital's IT department provided the server. What follows is about the security of that environment: what I found in its configuration, what was corrected, and what is still open.
+
+The system runs on a Windows server the hospital owns, reachable only from inside the hospital. Four programs run on it side by side: the application, the database, Keycloak, and the FHIR server. None can be reached from the internet, and the FHIR server can only be reached from the machine itself. Patient data is read from the hospital's own system, with limited read-only access granted by the IT department, so this deployment holds no patient records of its own. I did not test whether the system keeps running under normal use, and that is recorded in Section \ref{sec:conc-future}.
+
+The application has a shortcut for developers: skip sign-in, pick a role, no password. It is useful on a laptop and dangerous on a server. The template that people copy when setting up a new server had that shortcut switched on, so anyone following it would have built a server that anyone could walk into. This was fixed twice. The template now has it switched off, and the application refuses to start if the shortcut is on in production.
+
+The system runs without encryption, the browser shows ``Not secure'' when you open it. So everything sent across the hospital network can be read: patient names, diagnoses, prices, and the token that keeps someone signed in. The session cookie cannot be protected either, because the library decides that from the address, and the address starts with http. A setting telling browsers to insist on encryption is in place, but browsers ignore it until encryption is already on. Two other things are waiting on the same fix: Keycloak cannot leave its development mode, and nobody checked whether the database on the disk is encrypted. Turning encryption on is the server administrator's job, not mine.
+
+The four containers are software written by other people, so rather than assume they were safe I scanned them, and Chapter \ref{chap:result} reports what that found. One problem was found without a scanner. Keycloak had not been told where to keep its accounts, so it had quietly used its own built-in database, the one its makers say not to use for real systems. Losing the container would have meant losing every account, and it could not be backed up without shutting Keycloak down. Keycloak was reconfigured to use the PostgreSQL database already running alongside it, in a separate area with its own restricted login.
+
+Three background jobs exist: one to disable accounts that Keycloak reports as disabled, one to warn when a case is taking too long, and one to close cases past their deadline. None of them runs. All three declare their schedule in a file meant for a hosting service this project does not use, and nothing on the hospital's server starts them. One is also called from the browser when the application is open, but that call uses a method the route does not accept and is rejected before any of it executes. The cause is the same in every case: the schedules were written for one kind of deployment, and the system runs on another.

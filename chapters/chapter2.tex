@@ -1,21 +1,60 @@
-
 \chapter{Problem Statement}
 \label{chap:ps}
-\chaptermark{Second Chapter Heading}
+\chaptermark{Problem Statement}
+
+This chapter sets out the problem the project addresses. It describes how Guarantee of Payment requests were handled before the system was built, what that process cost the hospital, which part of it this thesis is concerned with, and what the problem amounts to when stated in short.
 
 \section{Background of the Problem}
-In this section, provide a brief background to the problem your research addresses. Describe the broader context and why this issue is significant. For example, you could explain the challenges faced by industries in robotics, automation, or welding, and why they are relevant to your study. Discuss any existing limitations or gaps in current solutions.
+\label{sec:ps-background}
 
-Clearly define the specific problem your research aims to solve. For example, you might identify inefficiencies in current welding processes, limitations of existing robotic systems, or challenges with integrating vision-based systems into industrial workflows.
+A Guarantee of Payment request is assembled from parts held by different people. The patient's identity and insurance details sit with the front desk, the clinical description comes from the surgeon, a separate assessment comes from the anaesthetist, and Finance builds the itemised cost from the hospital's own pricing. Each insurer sets its own form and required fields, so the same case may be presented differently depending on who is being asked to pay.
+
+At Intercare Hospital this was done on paper, and the paper travelled. The surgeon and anaesthetist completed their parts and handed the file to the Surgical Coordinator, who checked it for missing information. Where something was missing, the Coordinator went back to the doctor concerned, who either supplied it themselves or gave permission for the Coordinator to enter it on their behalf. Once complete, the file went to Finance for costing, returned to the Coordinator for the patient's acknowledgement, and if the patient agreed went back to Finance to be sent to the insurer. If the patient declined, the case ended there.
+
+The paper file was the control. Only the person holding it could act in that case. Nothing moved forward unless someone carried it, and an incomplete case went back to the doctor. The order of the work, the point at which each group's part ended, and the separation between the clinical and financial sides were all carried by the movement of that paper. None of it was written down as a rule, because none of it needed to be.
+
+Automating this is not just moving the same process onto a screen. Once the file becomes a database record, everyone can reach it at any time, and the sequence the paper enforced no longer exists.
+
+The new system removes the Coordinator as a required stop. The doctors now pass the case to Finance directly. The Coordinator watches progress and can still edit when needed, which is what happened on paper too. What did not carry over is the asking. Before making a change, the Coordinator contacts whoever owns that part, the surgeon, the anaesthetist, or Finance by phone, message or in person. That happens outside the system. So the log shows who made the change, but not that anyone agreed to it.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figs/Figure1-GOP-Process-Flow-Comparison.png}
+  \caption{The GOP process on paper compared with the process in the system. Amber marks where the two differ. A patient who declines ends the case; where the insurer asks for changes, Finance revises the request and sends it again.}
+  \label{fig:process-comparison}
+\end{figure}
+
+On paper, the Coordinator had to walk over and ask before changing a doctor's form. In software, nothing physical stops anyone. So each rule the paper enforced had to become one of two things. Some rules the code blocks: the surgeon and anaesthetist can no longer edit a case once it reaches Finance, and the system refuses the change. Others it cannot block, because the system has no way to know whether the Coordinator phoned the surgeon first, so it allows the edit and records who made it.
 
 \section{Impact of the Problem}
-Explain the impact of this problem on the company, industry, or specific field of study. Discuss how the problem affects productivity, quality, safety, or costs. For example, you could highlight how manual welding is time-consuming and prone to errors, leading to increased operational costs and lower quality.
+\label{sec:ps-impact}
+
+The manual process cost staff time. Preparing one request meant collecting information that already existed elsewhere. Staff walked between departments to get it, then typed the same patient details more than once as the file moved. A request passed through four departments before it left the hospital, and each hand-off waited on someone being free to receive it.
+
+The clearest case was the handover to Finance. The surgeon and anaesthetist wrote their parts by hand, and Finance then re-entered all of it digitally, because both the patient consent form and the insurer's request had to be produced as documents. With each insurer setting its own format, the same handwritten case could be typed out in more than one layout.
+
+The process also depended on people who are hard to reach. Finance and the Coordinator could not move a case forward until the surgeon and anaesthetist had entered their parts, and staff report that those parts were sometimes forgotten or supplied late. Chasing a doctor who is in theatre or between patients is not quick, so a case could sit waiting on one missing figure.
+
+Order was also difficult to keep. With cases held as paper files, there was nothing to show which had been waiting longest or which needed attention first. Staff report that a case opened early could finish last, and that an emergency case could be delayed simply because the file was hard to find among the others. Nothing about a stack of paper tells you what is urgent.
+
+Repetition also costs accuracy. Details typed a second or third time can be typed differently, a date entered as the fourth month rather than the third, for instance. The information the doctors supplied was correct; the copying was where it went wrong. A mismatch between the patient record, the clinical description and the cost is the kind of error an insurer returns rather than resolves. And because each insurer sets its own form, a missing field found late meant the request came back and the work was done again.
+
+The paper carried its own record. The file showed who the doctors were, who handed it on, and when. That record existed as a by-product of being paper: a signature had to be written, a date entered, and a correction crossed out in view of whoever held the file next. Software keeps none of that by itself. A database shows the current value of a field, not who set it or what it was before. The record has to be built deliberately, or there is none.
 
 \section{Scope of the Problem}
-Narrow down the scope of the problem to focus on what your project addresses. Explain the specific aspect of the problem that you will tackle in your research. For instance, your project may focus on automating a specific part of the welding process or improving the accuracy of robotic vision systems for better alignment.
+\label{sec:ps-scope}
+
+Not all of the problems described above are addressed here. The security work covers signing in, what each user may do, how their actions are recorded, and the security of the software the system runs on. It also covers the administration screens themselves: the interface for enabling and disabling accounts, and the view onto the audit trail. The application logic, the integration with the hospital information system, and the database design were the work of my teammates, and appear in this thesis only where a security decision depends on them.
+
+The system is only reachable inside the hospital, so the realistic risk is a member of staff doing something they should not, rather than an outside attacker. Two checks remain: a penetration test by the hospital's IT Security Division, and a review of the container settings against the Center for Internet Security (CIS) Docker Benchmark. Neither had been done when this was written. Going live also required a signed non-disclosure agreement, hospital approval, and privacy safeguards, all agreed at the start of the project.
 
 \section{Summary of the Problem}
-Summarize the problem in one or two sentences to clearly state what your research aims to solve. This will set the stage for the objectives and methodology you will describe later in your thesis.
+\label{sec:ps-summary}
 
+The manual Guarantee of Payment process was slow, repetitive and open to error. It did keep a record of who did what, but only because the paper carried signatures, dates and visible corrections.
 
+Automating it removes the costs. It also removes two things that came free with the paper. The first is the physical route that quietly enforced the order of the work: who could act on a case, at what point their part ended, and where the clinical side stopped and the financial side began. The second is the record itself.
 
+Software will not make people work in order, and it will not keep a history. You have to build both. Every rule must be written into the code. Every action must be saved on purpose. On paper, someone nearby might spot a mistake. In software, no one is nearby. If a rule is wrong, nothing catches it.
+
+The question is not whether the process can be automated. It is whether the system can be trusted to let the right people do the right things. Answering it means listing every action the system allows, deciding the rule for each one, putting the check somewhere the user cannot get past, recording what happened, and then testing that it works.

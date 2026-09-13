@@ -1,14 +1,12 @@
-% --- Acknowledgements ---
+% --- Abstract ---
 
 \newpage
 \thispagestyle{empty}
 
-% \chapter*{Abstract}
  \begin{center}
      {\huge \textbf{Abstract}} \\[1.5cm]
- \end{center} 
+ \end{center}
 
-% \addcontentsline{toc}{chapter}
-For an undergraduate thesis abstract, write one paragraph (150–250 words) that briefly summarizes your project. Begin by stating the background or problem you are addressing and the objective of your study. Then, describe the methods you used to carry out the research. Next, summarize the main results or findings. Finally, conclude by explaining the significance of your results or the potential application of your work. Keep the writing clear and simple, avoid detailed explanations or references, and use past tense for work you have completed. 
-\\ 
-\textbf{Keywords:} ....,.... 
+Intercare Hospital processes insurance Guarantee of Payment (GOP) requests by hand, which causes delays, errors, and inconsistency. Automating this work places patient clinical data and hospital pricing in a single system used by five staff roles with different responsibilities. This study designed, implemented, and verified the security of that system, covering identity management, access control, audit logging, and vulnerability assessment. The NIST Cybersecurity Framework 2.0 structured the work, with STRIDE used for threat modelling and the 2021 edition of the OWASP Top 10 for code review. Keycloak was selected over a cloud service because the hospital required hosting on its own servers. Access control combined role-based (RBAC) and attribute-based (ABAC) rules across forty-two defined actions, supported by an append-only audit log. Verification used both automated scanning and manual role-by-role testing of the running system. Static analysis with Semgrep covered 356 files and produced 15 findings. None concerned access control. Manual role-by-role testing of the same system in the same period produced 47 tracked findings, of which 23 were access-control findings. Most were fixed before deployment, and the rest were recorded as deferred decisions. Permissions were found to depend on three factors together: the user's role, their assignment to a case, and how far that case had progressed through the workflow. These findings indicate that automated scanning alone cannot verify authorisation logic, because such rules depend on organisational policy rather than on code structure. They also show that access control in clinical workflows must depend on the state of a case, not on the user's role alone.
+\\
+\textbf{Keywords:} access control, role-based access control (RBAC), attribute-based access control (ABAC), Keycloak, healthcare information systems, security testing
