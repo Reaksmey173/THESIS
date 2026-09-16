@@ -36,7 +36,7 @@ The clearest result came from comparing those methods. Static analysis applied 2
 
 The second result concerns what those rules depend on. A permission is decided by three things together, the user's role, whether the case is theirs, and how far the case has progressed. The third is easiest to miss, because it changes the answer for a user whose role and assignment have not changed: a surgeon becomes read-only when the anaesthetist finishes and the case moves to Finance. That step is what enforces in software the separation the hospital already practised on paper.
 
-The limits are stated rather than implied. There is no automated test suite, so verification was manual and happened once. The system was served without encryption at the time of assessment, and two of its internal connections still are. Everything reported in this thesis is self-assessment, by the person who built the controls; an independent penetration test has since been carried out by Canadia Bank (IT security department) and the hospital's IT Security Division, but its findings are confidential and not reproduced in this thesis, so this thesis cannot say whether it confirmed or contradicted what is reported here. And the final review found controls that had never run at all: a page-rule file the framework never loaded, and three background jobs nothing on the server started. Each has since taken a different path, superseded, given a working trigger, or retired outright, described in Section \ref{sec:impl-deployment}, but none of the three were fixed by the simple means first planned. That combination is the plainest evidence that a system checked once is not a system that stays checked.
+The limits are stated rather than implied. There is no automated test suite, so verification was manual and happened once. The system was served without encryption at the time of assessment, and two of its internal connections still are. Everything reported in this Graduation Project Report is self-assessment, by the person who built the controls; an independent penetration test has since been carried out by Canadia Bank (IT security department) and the hospital's IT Security Division, but its findings are confidential and not reproduced in this Graduation Project Report, so this Graduation Project Report cannot say whether it confirmed or contradicted what is reported here. And the final review found controls that had never run at all: a page-rule file the framework never loaded, and three background jobs nothing on the server started. Each has since taken a different path, superseded, given a working trigger, or retired outright, described in Section \ref{sec:impl-deployment}, but none of the three were fixed by the simple means first planned. That combination is the plainest evidence that a system checked once is not a system that stays checked.
 
 What this project produced is therefore not a secure system but a documented one: rules that can be checked, a record of what was found, and a list of what remains with an owner against each item.
 
@@ -45,39 +45,57 @@ What this project produced is therefore not a secure system but a documented one
 
 Eighteen items remain. Some are not mine to decide. Setting the audit retention period, or deciding whether the disk should be encrypted, are choices for the hospital. Some need another team, such as the server administrator or Canadia Bank (IT security department), since they sit outside the application itself. The rest were within reach but ran out of time, and are left for the next phase.
 
-\begin{longtable}{p{0.6cm}p{5.6cm}p{2.1cm}p{1.5cm}p{3.4cm}}
+\begin{longtable}{|p{0.6cm}|p{5.6cm}|p{2.1cm}|p{1.5cm}|p{3.4cm}|}
 \caption{Work remaining, by priority.}
 \label{tab:future-work} \\
-\toprule
+\hline
  & \textbf{Item} & \textbf{Category} & \textbf{Priority} & \textbf{Who can carry it} \\
-\midrule
+\hline
 \endfirsthead
 \multicolumn{5}{@{}l}{\textbf{Table \thetable} \ldots continued} \\
-\toprule
+\hline
  & \textbf{Item} & \textbf{Category} & \textbf{Priority} & \textbf{Who can carry it} \\
-\midrule
+\hline
 \endhead
-\midrule
+\hline
 \multicolumn{5}{r}{\textit{Continued on next page}} \\
 \endfoot
-\bottomrule
+\hline
 \endlastfoot
 1 & Encrypt the Keycloak-to-application and Keycloak-to-AD connections & Server config & High & Server administrator \\
+\hline
 2 & Move Keycloak out of development mode in the production deployment profile, which its own documentation advises against & Server config & High & Server administrator \\
+\hline
 3 & Add multi-factor authentication & Development & High & Security \\
+\hline
 4 & Close System Administrator's write access to clinical and cost data on two routes, since the design states this role should be view-only there; the audit log records these writes accurately but with no flag marking them as out-of-policy, unlike the system's other admin override actions, which are deliberately logged to stand out & Development & High & Security \\
+\hline
 5 & Hide raw error messages from users in production (ASVS F4) & Development & Medium & Security \\
+\hline
 6 & Ask for password again before finalising a case or sending it to the insurer (ASVS F6) & Development & Medium & Security \\
+\hline
 7 & Send an alert when someone fails to log in or access something too many times & Development & Medium & Security \\
+\hline
 8 & Record device/network address in audit entries & Development & Medium & Security \\
+\hline
 9 & Add a way to force-log-out one specific session, without disabling the whole account & Development & Medium & Security \\
+\hline
 10 & Check if the server can handle heavy use and stay running (DoS / availability) & Server config & Medium & Canadia Bank (IT security department) (reviewed), Hospital IT \\
+\hline
 11 & Add automated dependency and code scanning to the build pipeline, so a fixed vulnerability does not silently reappear in a later release without anyone noticing & Server config & Medium & Security \\
+\hline
 12 & Write down when someone is blocked for having no role, since this is not recorded anywhere yet & Design & Medium & Security \\
+\hline
 13 & Combine the case-assignment rule into one place (8 separate copies currently exist) & Design & Medium & Security \\
+\hline
 14 & Re-assess the system against a newer version of ASVS (5.0), since 4.0.3 and OWASP Top 10:2021 are both now several years old & Assessment & Medium & Security \\
+\hline
 15 & Confirm whether Canadia Bank's container review specifically followed the CIS Docker Benchmark, or complete that comparison separately if not & Assessment & Low & Canadia Bank (IT security department) (reviewed), Hospital IT \\
+\hline
 16 & Make the Actor column match the Description text after someone renames & Design & Low & Security \\
+\hline
 17 & Give the same ``not allowed'' message whether a case is real or fake & Design & Low & Security \\
+\hline
 18 & Fully remove the developer sign-in shortcut's code, rather than leaving it present and flag-gated, so it cannot be reintroduced by a future configuration change & Development & Medium & Security \\
+\hline
 \end{longtable}

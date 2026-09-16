@@ -11,7 +11,7 @@ This chapter reports what the security work produced, and what those results mea
 
 The system was checked in two ways. Automated tools looked at three things: the outside packages the system uses, the container images it runs in, and the project's own code. Manual testing was done role by role on the running system, using one account for each role and following each case from creation to the insurer's decision. Both were done in the same period, on the same version of the system, and the rules being tested covered forty-two actions across five roles. The ASVS assessment described in Section \ref{sec:result-asvs} was carried out separately, later in the work, against a subsequent version of the system.
 
-Two checks were still to come at the time of this assessment. The hospital's IT Security Division had not yet tried to break into the system, and the container settings had not yet been checked against the CIS Docker Benchmark. Neither had been done when this was written. Both have since occurred: Canadia Bank (IT security department) carried out a penetration test jointly with the hospital's IT Security Division, and separately reviewed the project's code and its containers. Their findings are confidential and are not reproduced in this thesis.
+Two checks were still to come at the time of this assessment. The hospital's IT Security Division had not yet tried to break into the system, and the container settings had not yet been checked against the CIS Docker Benchmark. Neither had been done when this was written. Both have since occurred: Canadia Bank (IT security department) carried out a penetration test jointly with the hospital's IT Security Division, and separately reviewed the project's code and its containers. Their findings are confidential and are not reproduced in this Graduation Project Report.
 
 \subsection{Package and Container Scanning}
 
@@ -19,15 +19,18 @@ Two checks were still to come at the time of this assessment. The hospital's IT 
 \centering
 \caption{Scanning targets and findings.}
 \label{tab:scan-targets}
-\begin{tabular}{p{3.6cm}p{2.6cm}p{6.8cm}}
-\toprule
+\begin{tabular}{|p{3.6cm}|p{2.6cm}|p{6.8cm}|}
+\hline
 \textbf{Target} & \textbf{Tool} & \textbf{Findings} \\
-\midrule
+\hline
 npm packages & npm audit & 15: 2 critical, 4 high, 8 moderate, 1 low \\
+\hline
 Keycloak 26.6.4 & Trivy & 16 high, 0 critical \\
+\hline
 PostgreSQL 16 & Trivy & 72, then 55 after an update \\
+\hline
 HAPI FHIR 7.4.0 & Trivy & 132: 27 critical, 105 high \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -43,17 +46,22 @@ Semgrep was used for this step; Section \ref{sec:met-tools} explains the choice 
 \centering
 \caption{What Semgrep found.}
 \label{tab:semgrep}
-\begin{tabular}{p{8.5cm}p{2cm}}
-\toprule
+\begin{tabular}{|p{8.5cm}|p{2cm}|}
+\hline
 \textbf{Type} & \textbf{Count} \\
-\midrule
+\hline
 Path traversal, looked at separately & 1 \\
+\hline
 Regular expression built at run time & 3 \\
+\hline
 Unsafe text in log messages & 5 \\
+\hline
 Unpinned action versions & 4 \\
+\hline
 Installer piped into a shell & 1 \\
+\hline
 Package setting & 1 \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -71,72 +79,87 @@ A finding was counted as access control if it changed which users could do which
 \centering
 \caption{The 47 findings by type.}
 \label{tab:findings-by-type}
-\begin{tabular}{p{4.3cm}p{1.2cm}p{7.2cm}}
-\toprule
+\begin{tabular}{|p{4.3cm}|p{1.2cm}|p{7.2cm}|}
+\hline
 \textbf{Type} & \textbf{Count} & \textbf{Example} \\
-\midrule
+\hline
 \textbf{Access control} & \textbf{23} & See Table \ref{tab:six-kinds} for the six sub-categories \\
+\hline
 Screens, data quality, workflow & 16 & Field validation, labelling, and workflow-order issues not related to permissions \\
+\hline
 Audit and logging & 4 & e.g.\ refused actions not written to the log \\
+\hline
 Input checking & 1 & A single validation-related finding; specific detail not retained \\
+\hline
 Sessions & 1 & Logging out left the Keycloak session open, letting the next user at a shared computer in without a password (fixed) \\
+\hline
 Deployment and configuration & 1 & Keycloak had defaulted to its own built-in H2 database instead of the PostgreSQL database alongside it (fixed) \\
+\hline
 Closed, not a defect & 1 & A finding investigated and confirmed as intended behaviour, not a bug; which one is not retained \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
 The 23 access-control findings fell into six groups.
 
-\begin{longtable}{p{3.6cm}p{9.3cm}}
+\begin{longtable}{|p{3.6cm}|p{9.3cm}|}
 \caption{The six kinds of access-control finding.}
 \label{tab:six-kinds} \\
-\toprule
+\hline
 \textbf{Group} & \textbf{Example} \\
-\midrule
+\hline
 \endfirsthead
 \multicolumn{2}{@{}l}{\textbf{Table \thetable} \ldots continued} \\
-\toprule
+\hline
 \textbf{Group} & \textbf{Example} \\
-\midrule
+\hline
 \endhead
-\midrule
+\hline
 \multicolumn{2}{r}{\textit{Continued on next page}} \\
 \endfoot
-\bottomrule
+\hline
 \endlastfoot
 Seeing cases they should not & A surgeon's list showed other surgeons' drafts \\
+\hline
 Actions held by the wrong role & Submit and finalise sat with the Coordinator, and refused Finance, the role that owns them \\
+\hline
 No lock on the case's step & Doctors could still edit details and costs after Finance had reviewed the case \\
+\hline
 Wrong identifier compared & Assignment checks compared two different kinds of user id, so doctors could not reach their own cases \\
+\hline
 Letting people through on failure & The disabled-account check allowed access when it found no record \\
+\hline
 Sessions outliving logout & Logging out left the Keycloak session open, so the next person at a shared computer entered the previous user's account \\
+\hline
 \end{longtable}
 
 \subsubsection{What Was Done About It}
 
 Most findings were fixed before deployment. Twenty-three improvements were recorded as decisions to leave for later, each with a stated reason and an owner.
 
-\begin{longtable}{p{4.4cm}p{8.5cm}}
+\begin{longtable}{|p{4.4cm}|p{8.5cm}|}
 \caption{Examples of work left for later, and why.}
 \label{tab:left-for-later} \\
-\toprule
+\hline
 \textbf{Left for later} & \textbf{Reason} \\
-\midrule
+\hline
 \endfirsthead
 \multicolumn{2}{@{}l}{\textbf{Table \thetable} \ldots continued} \\
-\toprule
+\hline
 \textbf{Left for later} & \textbf{Reason} \\
-\midrule
+\hline
 \endhead
-\midrule
+\hline
 \multicolumn{2}{r}{\textit{Continued on next page}} \\
 \endfoot
-\bottomrule
+\hline
 \endlastfoot
 Duplicate drafts & Detection is built and working: a surgeon starting a case is warned of an existing draft and can jump to it. Deleting the old draft is possible but through a separate, general delete action, not linked to that warning; merging two drafts into one was never built \\
+\hline
 Reversal (formerly ``appeal'') & Built as a complete feature, allowing Finance or an administrator to reopen a closed case and re-enter the workflow without starting over, but switched off behind a single flag pending a decision to enable it \\
+\hline
 Refused sign-ins not recorded in the application log & Sign-in stops before the audit write; the attempts exist in Keycloak's log \\
+\hline
 \end{longtable}
 
 The clearest illustration of a finding that carried more weight than it first appeared to have concerned the page-level access rules. The file holding those rules sat at the top of the repository, while the application runs from a folder inside it. The framework only looks inside that folder, so it never found the file, and those rules had never run at all. Nothing was exposed, because the central module described in Section \ref{sec:impl-access-model} was checking every request anyway. What only emerged later was that the file's own settings excluded those addresses entirely, so even had it loaded, it would never have guarded what it appeared to guard. It read as a control, and was never capable of being one. It was left as it stood: switching on a gate that has never run means every page might behave differently, and that needs a full test pass across the whole system.
@@ -167,14 +190,16 @@ Every category of the OWASP Top 10:2021 was rated against evidence from this pro
 \centering
 \caption{OWASP Top 10:2021 ratings.}
 \label{tab:owasp-ratings}
-\begin{tabular}{p{2cm}p{10cm}}
-\toprule
+\begin{tabular}{|p{2cm}|p{10cm}|}
+\hline
 \textbf{Rating} & \textbf{Categories} \\
-\midrule
+\hline
 Strong & A07 authentication \\
+\hline
 Partial & A01 access control, A02 cryptography, A03 injection, A04 design, A05 misconfiguration, A06 outdated components, A08 data integrity, A09 logging, A10 request forgery \\
+\hline
 Needs work & --- \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -195,39 +220,53 @@ A newer version, ASVS 5.0.0, was also available at the time, released in May 202
 
 All fourteen chapters were assessed; none were skipped wholesale, though a small number of individual requirements were marked not applicable where the underlying feature does not exist in this system, for example, the requirements covering SOAP and GraphQL interfaces, since neither is used here, and self-service credential recovery, since accounts are provisioned rather than self-registered. Sixty-two subsections were checked in total: 29 were met, 20 partially met, 6 not met, and 7 not applicable. Level 2 was not fully achieved; no chapter was rated as fully met.
 
-\begin{longtable}{p{4.6cm}p{1.3cm}p{1.6cm}p{1.8cm}p{1.3cm}p{2cm}}
+\begin{longtable}{|p{4.6cm}|p{1.3cm}|p{1.6cm}|p{1.8cm}|p{1.3cm}|p{2cm}|}
 \caption{ASVS 4.0.3 results by chapter.}
 \label{tab:asvs-results} \\
-\toprule
+\hline
 \textbf{Chapter} & \textbf{Met} & \textbf{Partial} & \textbf{Not Met} & \textbf{N/A} & \textbf{Subsections} \\
-\midrule
+\hline
 \endfirsthead
 \multicolumn{6}{@{}l}{\textbf{Table \thetable} \ldots continued} \\
-\toprule
+\hline
 \textbf{Chapter} & \textbf{Met} & \textbf{Partial} & \textbf{Not Met} & \textbf{N/A} & \textbf{Subsections} \\
-\midrule
+\hline
 \endhead
-\midrule
+\hline
 \multicolumn{6}{r}{\textit{Continued on next page}} \\
 \endfoot
-\bottomrule
+\hline
 \endlastfoot
 V1 Architecture, Design and Threat Modelling & 5 & 3 & 1 & 0 & 9 \\
+\hline
 V2 Authentication & 2 & 3 & 0 & 2 & 7 \\
+\hline
 V3 Session Management & 5 & 1 & 0 & 1 & 7 \\
+\hline
 V4 Access Control & 3 & 0 & 0 & 0 & 3 \\
+\hline
 V5 Validation, Sanitization and Encoding & 2 & 2 & 0 & 1 & 5 \\
+\hline
 V6 Cryptographic Storage (at Rest) & 1 & 1 & 1 & 1 & 4 \\
+\hline
 V7 Error Handling and Logging & 0 & 3 & 1 & 0 & 4 \\
+\hline
 V8 Data Protection & 1 & 1 & 1 & 0 & 3 \\
+\hline
 V9 Communications & 1 & 1 & 0 & 0 & 2 \\
+\hline
 V10 Malicious Code & 2 & 1 & 0 & 0 & 3 \\
+\hline
 V11 Business Logic & 0 & 1 & 0 & 0 & 1 \\
+\hline
 V12 Files and Resources & 5 & 0 & 1 & 0 & 6 \\
+\hline
 V13 API and Web Service & 0 & 2 & 0 & 2 & 4 \\
+\hline
 V14 Configuration & 2 & 1 & 1 & 0 & 4 \\
-\midrule
+\hline
 \textbf{Total} & \textbf{29} & \textbf{20} & \textbf{6} & \textbf{7} & \textbf{62} \\
+\hline
 \end{longtable}
 
 Each of the six not-met subsections sits in a different chapter, with no chapter failing more than one: no documented threat-modelling process or automated security scanning in the build pipeline (V1); patient data held in plain, unclassified columns with no field-level encryption (V6); no centralised log monitoring or alerting (V7); no data-retention or deletion policy (V8, the same gap noted below as deliberately deferred); no malware scanning or integrity check on uploaded files (V12); and minor server-fingerprinting headers left at their defaults (V14). Taken together, the weakest areas cluster around process and lifecycle gaps rather than exploitable code-level defects: nothing here is a working attack, but each is a control the standard expects that this project does not yet have.
@@ -253,14 +292,16 @@ Role-based access control asks one question: what is this user's role? In this s
 \centering
 \caption{The three factors, with an example of each.}
 \label{tab:three-factors-table}
-\begin{tabular}{p{2.6cm}p{9.4cm}}
-\toprule
+\begin{tabular}{|p{2.6cm}|p{9.4cm}|}
+\hline
 \textbf{Factor} & \textbf{Example from this system} \\
-\midrule
+\hline
 Role & Only a surgeon may create a case \\
+\hline
 Assignment & A surgeon sees only their own cases; a doctor may remove only files they uploaded \\
+\hline
 The case's step & Once a case reaches Finance, both doctors become read-only \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 

@@ -39,20 +39,28 @@ I applied frameworks selectively rather than in full. Table \ref{tab:frameworks}
 \centering
 \caption{Frameworks and standards used, and how far each was applied.}
 \label{tab:frameworks}
-\begin{tabular}{p{3.6cm}p{2cm}p{7.5cm}}
-\toprule
+\begin{tabular}{|p{3.6cm}|p{2cm}|p{7.5cm}|}
+\hline
 \textbf{Framework} & \textbf{Version} & \textbf{Extent of application} \\
-\midrule
+\hline
 NIST Cybersecurity Framework & 2.0 (2024) & Six functions used to organise the work; control set not implemented \\
+\hline
 HL7 FHIR & R5 & Security section only \\
+\hline
 NIST SP 800-162 & 2014 & Definition and model of attribute-based access control \\
+\hline
 OWASP Top 10 & 2021 & All ten categories rated against evidence \\
+\hline
 NBC Technology and Cyber Risk Management Guidelines & 2026 & Access control, data security, audit trail and testing sections, used as a benchmark \\
+\hline
 OWASP ASVS & 4.0.3 (2021) & Level 2 target, all 14 chapters assessed, 62 subsections checked \\
+\hline
 STRIDE & --- & All six categories \\
+\hline
 CIS Docker Benchmark & --- & Not applied; planned for a later phase \\
+\hline
 OWASP Testing Guide & --- & Not applied; planned for a later phase \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -71,39 +79,40 @@ I used STRIDE: spoofing, tampering, repudiation, information disclosure, denial 
 
 Five of the six hold defects found during this project. The sixth, denial of service, was not addressed, and is recorded as a limitation.
 
-\begin{longtable}{p{2.3cm}p{4.1cm}p{7cm}}
+\begin{longtable}{|p{2.3cm}|p{4.1cm}|p{7cm}|}
 \caption{STRIDE categories and the defects found in each.}
 \label{tab:stride} \\
-\toprule
+\hline
 \textbf{Category} & \textbf{Threat in this system} & \textbf{What was found} \\
-\midrule
+\hline
 \endfirsthead
 \multicolumn{3}{@{}l}{\textbf{Table \thetable} \ldots continued} \\
-\toprule
+\hline
 \textbf{Category} & \textbf{Threat in this system} & \textbf{What was found} \\
-\midrule
+\hline
 \endhead
-\midrule
+\hline
 \multicolumn{3}{r}{\textit{Continued on next page}} \\
 \endfoot
-\bottomrule
+\hline
 \endlastfoot
 Spoofing & Someone acts as a user they are not & A user belonging to no group received a valid session and could read every case. Signing out left the identity provider's session open, so the next person at a shared computer entered the previous user's account without a password. \\
-\addlinespace
+\hline
 Tampering & Case data changed by someone who should not be able to, or at a point when it should be locked & Doctors could alter the diagnosis and the cost after Finance had reviewed the case. Prices could be changed on cases already submitted or closed. A user could change their own display name, which relabelled every past audit entry for that person. \\
-\addlinespace
+\hline
 Repudiation & Someone denies an action, and the record cannot prove otherwise & When the system refused someone, it recorded nothing. Audit entries could not show which role had acted. A refused sign-in is recorded nowhere in the application, because sign-in stops before anything is written. Those attempts appear only in Keycloak's own log, so an investigation has to look in two places. The log stores a reference to the user, and looks up the name when the record is read. So a change of name changes every past entry for that person. \\
-\addlinespace
+\hline
 Information disclosure & Data reaches someone who should not see it & A surgeon's list included other surgeons' cases. Finance saw every case by dropping one URL parameter. Every role could read the full staff directory, including email addresses. Removing a patient identifier from the screen did not remove it from the data sent to the browser, where it can still be read. The connection is not encrypted, so patient data and session cookies cross the hospital network in readable form. \\
-\addlinespace
+\hline
 Denial of service & The system is knocked over so nobody can use it & Not addressed in this phase. \\
-\addlinespace
+\hline
 Elevation of privilege & A user gains rights they were not granted & Case creation was open to three roles instead of one. Submit and finalise sat with the wrong role. The page-level guard never ran at all. If creating a user's database record fails, the error is logged but the sign-in continues, so a session can exist with no record behind it. \\
+\hline
 \end{longtable}
 
 Most of the findings are about people seeing what they should not, or doing what they should not. That is what you would expect from a system where five roles share the same cases. Both kinds are decided by the same three things: the user's role, whether the case is theirs, and how far the case has progressed.
 
-Denial of service was not addressed in this phase. Being reachable only inside the hospital lowers the risk from an outside attacker. It does not remove the risk from a compromised or careless account inside the hospital. Testing for it was not reached in the time available. It is understood to be covered by Canadia Bank (IT security department)'s separate review, though those findings are confidential and not reproduced in this thesis. It is recorded in Section \ref{sec:conc-future}.
+Denial of service was not addressed in this phase. Being reachable only inside the hospital lowers the risk from an outside attacker. It does not remove the risk from a compromised or careless account inside the hospital. Testing for it was not reached in the time available. It is understood to be covered by Canadia Bank (IT security department)'s separate review, though those findings are confidential and not reproduced in this Graduation Project Report. It is recorded in Section \ref{sec:conc-future}.
 
 \section{Tools and Technology}
 \label{sec:met-tools}
@@ -114,24 +123,36 @@ The tools fall into two groups: those the system is built from, and those used t
 \centering
 \caption{Tools used in the system and in its verification.}
 \label{tab:tools}
-\begin{tabular}{p{4.3cm}p{4.8cm}p{3.5cm}}
-\toprule
+\begin{tabular}{|p{4.3cm}|p{4.8cm}|p{3.5cm}|}
+\hline
 \textbf{Purpose} & \textbf{Tool} & \textbf{Version} \\
-\midrule
+\hline
 Identity provider & Keycloak & 26.7.2 \\
+\hline
 Application framework & Next.js & 15.5.24 \\
+\hline
 Session handling & Auth.js (NextAuth) & 5.0.0-beta.32 \\
+\hline
 Database & PostgreSQL & 16 \\
+\hline
 Database access and migrations & Prisma & 7.8.0 \\
+\hline
 FHIR server & HAPI FHIR & 7.4.0 \\
+\hline
 Hospital information system & ANZER, read-only & --- \\
+\hline
 Deployment & Docker / Docker Compose & 29.7.2 / v5.4.0 \\
+\hline
 Static analysis & Semgrep & --- \\
+\hline
 Container image scanning & Trivy & --- \\
+\hline
 Dependency scanning & npm audit & npm 11.12.1 \\
+\hline
 Secret scanning & secretlint & 13.0.2 \\
+\hline
 Browser-driven testing & Puppeteer & 25.3.0 \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
