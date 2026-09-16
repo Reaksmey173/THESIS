@@ -15,7 +15,7 @@ The paper file was the control. Only the person holding it could act in that cas
 
 Automating this is not just moving the same process onto a screen. Once the file becomes a database record, everyone can reach it at any time, and the sequence the paper enforced no longer exists.
 
-The new system removes the Coordinator as a required stop. The doctors now pass the case to Finance directly. The Coordinator watches progress and can still edit when needed, which is what happened on paper too. What did not carry over is the asking. Before making a change, the Coordinator contacts whoever owns that part, the surgeon, the anaesthetist, or Finance by phone, message or in person. That happens outside the system. So the log shows who made the change, but not that anyone agreed to it.
+The new system removes the Coordinator as a required stop. The doctors now pass the case to Finance directly. The Coordinator now only watches progress; editing another role's part of a case is no longer something the Coordinator does. This was not the original plan. Early in the work, the Coordinator kept a narrow edit right carried over directly from paper: the ability to adjust a case's pricing after Finance had verified it, on the understanding that the change had been agreed by phone or in person first, with only the audit log to show who made it. The system had no way to check that the conversation actually happened, so the edit was allowed and simply recorded. That exception was closed before the work finished. The Coordinator's editing rights were narrowed to their own scope only, case priority and response-time targets, and the trust-based allowance was removed rather than kept.
 
 \begin{figure}[H]
   \centering
@@ -24,7 +24,7 @@ The new system removes the Coordinator as a required stop. The doctors now pass 
   \label{fig:process-comparison}
 \end{figure}
 
-On paper, the Coordinator had to walk over and ask before changing a doctor's form. In software, nothing physical stops anyone. So each rule the paper enforced had to become one of two things. Some rules the code blocks: the surgeon and anaesthetist can no longer edit a case once it reaches Finance, and the system refuses the change. Others it cannot block, because the system has no way to know whether the Coordinator phoned the surgeon first, so it allows the edit and records who made it.
+On paper, the Coordinator had to walk over and ask before changing a doctor's form. In software, nothing physical stops anyone. So each rule the paper enforced had to become one of two things. Most rules the code blocks outright: the surgeon and anaesthetist can no longer edit a case once it reaches Finance, and the system refuses the change. One rule briefly took the other path, allowed without a check and only logged, trusting that the real-world conversation had happened. That was the Coordinator's pricing edit described above, and it is the only example of that pattern found anywhere in the system. It did not stay that way for long: by the time this work finished, it had been closed and folded into the first kind of rule instead, so every rule the paper enforced is now enforced by code, with no trust-based exception left standing.
 
 \section{Impact of the Problem}
 \label{sec:ps-impact}
@@ -46,7 +46,7 @@ The paper carried its own record. The file showed who the doctors were, who hand
 
 Not all of the problems described above are addressed here. The security work covers signing in, what each user may do, how their actions are recorded, and the security of the software the system runs on. It also covers the administration screens themselves: the interface for enabling and disabling accounts, and the view onto the audit trail. The application logic, the integration with the hospital information system, and the database design were the work of my teammates, and appear in this thesis only where a security decision depends on them.
 
-The system is only reachable inside the hospital, so the realistic risk is a member of staff doing something they should not, rather than an outside attacker. Two checks remain: a penetration test by the hospital's IT Security Division, and a review of the container settings against the Center for Internet Security (CIS) Docker Benchmark. Neither had been done when this was written. Going live also required a signed non-disclosure agreement, hospital approval, and privacy safeguards, all agreed at the start of the project.
+The system is only reachable inside the hospital, so the realistic risk is a member of staff doing something they should not, rather than an outside attacker. Two checks were outstanding at the time this scope was set: a penetration test by the hospital's IT Security Division, and a review of the container settings against the Center for Internet Security (CIS) Docker Benchmark. The first has since been carried out, by Canadia Bank (IT security department) together with the hospital's IT Security Division. The second, the container review, has also since been carried out by Canadia Bank (IT security department), though not confirmed as following the CIS Docker Benchmark specifically. Going live also required a signed non-disclosure agreement, hospital approval, and privacy safeguards, all agreed at the start of the project.
 
 \section{Summary of the Problem}
 \label{sec:ps-summary}

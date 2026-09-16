@@ -15,21 +15,17 @@ This chapter covers the difficulties encountered during the security work, the c
 
 \textbf{The domain was entirely new.} Electronic medical records, the hospital's own information system, the FHIR standard, and how insurance approval works were all unfamiliar. Before any of us could start building, we spent weeks understanding the process itself, what the hospital already had, what they wanted, and how people actually worked. Access control cannot be designed without understanding the workflow it protects, so learning the domain was a prerequisite rather than background reading.
 
-\textbf{Evaluation used the time that implementation would have needed.} The team spent several months trialling Microsoft Entra ID before establishing that the hospital's requirement to host on its own servers ruled it out. Keycloak was then deployed and learned from the beginning. The hospital's staff directory was made available for federation later in the phase, but by then there was no time left to connect it. Federation is therefore understood and planned but not built, and it is recorded in Section \ref{sec:conc-future}.
+\textbf{Evaluation used the time that implementation would have needed.} The team spent several months trialling Microsoft Entra ID before it was ruled out. When the hospital's IT team was consulted about the firewall rules Entra ID would need, it became clear the hospital did not want the system connected to the cloud at all. Keycloak was then deployed and learned from the beginning. Federation with the hospital's staff directory was delayed by the time spent on the Entra ID trial. It is now complete, and Section \ref{sec:impl-iam} describes the result.
 
 \textbf{Almost everything was designed by revision.} Access rules were built one at a time, decided, implemented, checked, and sometimes the requirement itself changed once people saw the result. The audit trail had no template at all: I decided what to record, revised it, took it to the IT head, revised again, researched, and revised once more. Verification behaved the same way, since each time I finished checking, a teammate found something that sent the work back round. The gaps recorded in Chapter \ref{chap:result} reflect a design arrived at by iteration rather than one worked out in advance.
 
-\textbf{Some problems appeared only after deployment, and signing in was the hardest of them.} Using an identity provider was new to everyone on the team, not only to me. Nobody had deployed one before, so each problem had to be worked out from first principles rather than looked up. Work that ran without trouble on my own machine failed once installed: sign-in stopped working, and staff on other machines could not sign in at all. The application's database also turned out to be empty, because one database update had failed partway and blocked every update after it. These reached me as reports from the deployment side rather than through my own testing, and my part was working out the cause of each.
-
 \subsection{Stakeholder Challenges}
-
-Nobody comes to you. At this workplace, if you need something you have to ask for it, and everyone whose knowledge I needed had their own work to do. Help was not continuously available. Learning to approach people directly, at the right moment, was a change in how I work, and it had to come before any of the technical work could proceed.
 
 The workflow had to be understood before it could be secured. Who may do what depends on which step a case has reached, so the flow had to be settled before the rules enforcing it could be written. The flow follows the hospital's existing paper procedure, so I began with the paper, reading the forms, following how a file moved between departments, and learning the terms doctors and hospital staff use for what those forms contain. None of that vocabulary was familiar. The flow was not mine to settle either: the Coordinator and Finance teams had to agree to it between them, over a series of meetings, and each change to it changed the rules enforcing it.
 
 Even now, with the flow decided and built, it is not certain that it matches what those teams expect in daily use.
 
-Some findings were questions rather than defects. Whether the coordinator should keep the ability to change prices after Finance has confirmed them is a decision for the hospital, not for me, and so is whether the FHIR server is needed at all. These took longer to settle than code fixes. Changes of that kind also affected my teammates, locking a form or restricting an action alters what they are building against, so they were raised before being applied rather than afterwards.
+Some findings were questions rather than defects. Whether the FHIR server is needed at all is a decision for the hospital, not for me. Whether the Coordinator should keep any ability to change prices after Finance has confirmed them was also such a question; it was raised with the hospital's team and settled during this work, in favour of removing that ability rather than keeping it, described in Section \ref{sec:impl-iam}. Questions of this kind took longer to settle than code fixes. Changes of that kind also affected my teammates, locking a form or restricting an action alters what they are building against, so they were raised before being applied rather than afterwards.
 
 \section{Conclusion}
 \label{sec:conc-conclusion}
@@ -40,71 +36,48 @@ The clearest result came from comparing those methods. Static analysis applied 2
 
 The second result concerns what those rules depend on. A permission is decided by three things together, the user's role, whether the case is theirs, and how far the case has progressed. The third is easiest to miss, because it changes the answer for a user whose role and assignment have not changed: a surgeon becomes read-only when the anaesthetist finishes and the case moves to Finance. That step is what enforces in software the separation the hospital already practised on paper.
 
-The limits are stated rather than implied. There is no automated test suite, so verification was manual and happened once. The system is served without encryption. The assessment is by the person who built the controls, not an independent audit. And the final review found controls that had never run at all, a page-rule file the framework never loaded, and three background jobs nothing on the server starts, which is the plainest evidence that a system checked once is not a system that stays checked.
+The limits are stated rather than implied. There is no automated test suite, so verification was manual and happened once. The system was served without encryption at the time of assessment, and two of its internal connections still are. Everything reported in this thesis is self-assessment, by the person who built the controls; an independent penetration test has since been carried out by Canadia Bank (IT security department) and the hospital's IT Security Division, but its findings are confidential and not reproduced in this thesis, so this thesis cannot say whether it confirmed or contradicted what is reported here. And the final review found controls that had never run at all: a page-rule file the framework never loaded, and three background jobs nothing on the server started. Each has since taken a different path, superseded, given a working trigger, or retired outright, described in Section \ref{sec:impl-deployment}, but none of the three were fixed by the simple means first planned. That combination is the plainest evidence that a system checked once is not a system that stays checked.
 
 What this project produced is therefore not a secure system but a documented one: rules that can be checked, a record of what was found, and a list of what remains with an owner against each item.
 
 \section{Future Work}
 \label{sec:conc-future}
 
-Twenty-eight items remain. Some need access or authority I did not have, and some are commitments only the hospital can make. The rest were within reach but not reached before this was written, and some of those may be taken up in the remaining month of the placement.
+Eighteen items remain. Some are not mine to decide. Setting the audit retention period, or deciding whether the disk should be encrypted, are choices for the hospital. Some need another team, such as the server administrator or Canadia Bank (IT security department), since they sit outside the application itself. The rest were within reach but ran out of time, and are left for the next phase.
 
-\begin{longtable}{p{0.6cm}p{8.4cm}p{3.3cm}}
-\caption{Work remaining, and who can carry it.}
+\begin{longtable}{p{0.6cm}p{5.6cm}p{2.1cm}p{1.5cm}p{3.4cm}}
+\caption{Work remaining, by priority.}
 \label{tab:future-work} \\
 \toprule
- & \textbf{Item} & \textbf{Who can carry it} \\
+ & \textbf{Item} & \textbf{Category} & \textbf{Priority} & \textbf{Who can carry it} \\
 \midrule
 \endfirsthead
-\multicolumn{3}{@{}l}{\textbf{Table \thetable} \ldots continued} \\
+\multicolumn{5}{@{}l}{\textbf{Table \thetable} \ldots continued} \\
 \toprule
- & \textbf{Item} & \textbf{Who can carry it} \\
+ & \textbf{Item} & \textbf{Category} & \textbf{Priority} & \textbf{Who can carry it} \\
 \midrule
 \endhead
 \midrule
-\multicolumn{3}{r}{\textit{Continued on next page}} \\
+\multicolumn{5}{r}{\textit{Continued on next page}} \\
 \endfoot
 \bottomrule
 \endlastfoot
-\multicolumn{3}{@{}l}{\textbf{Server configuration}} \\
-1 & Enable transport encryption, the most important item outstanding & Server administrator \\
-2 & Confirm whether the server's disk is encrypted & Server administrator \\
-3 & Confirm the server's clock is synchronised & Server administrator \\
-4 & Schedule the three background jobs, none of which currently runs & Server administrator \\
-5 & Assess availability and denial of service & Server administrator \\
-6 & Review whether the server is powerful enough for real use & Hospital IT \\
-\addlinespace
-\multicolumn{3}{@{}l}{\textbf{Development in the next phase}} \\
-7 & Record the device and network address in audit entries & Security \\
-8 & Raise an alert on repeated refused attempts & Security \\
-9 & Protect the activity log, or stop it recording request bodies & Security \\
-10 & Add multi-factor authentication & Security \\
-11 & Connect federation with the hospital's staff directory & Security \\
-12 & Deploy the corrections verified locally & Development \\
-13 & Hold session state on the server, so sessions can be withdrawn and differ by role & Security \\
-\addlinespace
-\multicolumn{3}{@{}l}{\textbf{Hospital governance}} \\
-14 & Set an audit trail policy and a retention period & Hospital \\
-15 & Review user access rights on a schedule & Hospital \\
-16 & Review what administrators do & Hospital \\
-17 & Collect logs centrally rather than leaving them in the application & Hospital \\
-\addlinespace
-\multicolumn{3}{@{}l}{\textbf{Design changes}} \\
-18 & Separate administering the system from reading the audit trail & Team decision, then development \\
-19 & Store names when a record is written rather than looking them up when read & Security \\
-20 & Record refused sign-ins in the application's own log & Security \\
-21 & Record account changes made in Keycloak & Security \\
-22 & Remove the duplicated assignment rule, so it exists in one place & Security \\
-23 & Check permission before checking whether a case exists & Security \\
-24 & Build the role override control or remove it & Team decision \\
-\addlinespace
-\multicolumn{3}{@{}l}{\textbf{Outstanding assessment}} \\
-25 & Pre-deployment assessment with the hospital's IT Security Division & IT Security Division \\
-26 & Check the container settings against the CIS Docker Benchmark & Whoever assesses \\
-27 & Re-assess against OWASP Top 10:2025, where Security Misconfiguration has moved from fifth place to second \cite{owasp2025} & Whoever assesses \\
-28 & Pin tool versions, since neither scanner was pinned and the results cannot be reproduced exactly & Whoever repeats the scan \\
+1 & Encrypt the Keycloak-to-application and Keycloak-to-AD connections & Server config & High & Server administrator \\
+2 & Move Keycloak out of development mode in the production deployment profile, which its own documentation advises against & Server config & High & Server administrator \\
+3 & Add multi-factor authentication & Development & High & Security \\
+4 & Close System Administrator's write access to clinical and cost data on two routes, since the design states this role should be view-only there; the audit log records these writes accurately but with no flag marking them as out-of-policy, unlike the system's other admin override actions, which are deliberately logged to stand out & Development & High & Security \\
+5 & Hide raw error messages from users in production (ASVS F4) & Development & Medium & Security \\
+6 & Ask for password again before finalising a case or sending it to the insurer (ASVS F6) & Development & Medium & Security \\
+7 & Send an alert when someone fails to log in or access something too many times & Development & Medium & Security \\
+8 & Record device/network address in audit entries & Development & Medium & Security \\
+9 & Add a way to force-log-out one specific session, without disabling the whole account & Development & Medium & Security \\
+10 & Check if the server can handle heavy use and stay running (DoS / availability) & Server config & Medium & Canadia Bank (IT security department) (reviewed), Hospital IT \\
+11 & Add automated dependency and code scanning to the build pipeline, so a fixed vulnerability does not silently reappear in a later release without anyone noticing & Server config & Medium & Security \\
+12 & Write down when someone is blocked for having no role, since this is not recorded anywhere yet & Design & Medium & Security \\
+13 & Combine the case-assignment rule into one place (8 separate copies currently exist) & Design & Medium & Security \\
+14 & Re-assess the system against a newer version of ASVS (5.0), since 4.0.3 and OWASP Top 10:2021 are both now several years old & Assessment & Medium & Security \\
+15 & Confirm whether Canadia Bank's container review specifically followed the CIS Docker Benchmark, or complete that comparison separately if not & Assessment & Low & Canadia Bank (IT security department) (reviewed), Hospital IT \\
+16 & Make the Actor column match the Description text after someone renames & Design & Low & Security \\
+17 & Give the same ``not allowed'' message whether a case is real or fake & Design & Low & Security \\
+18 & Fully remove the developer sign-in shortcut's code, rather than leaving it present and flag-gated, so it cannot be reintroduced by a future configuration change & Development & Medium & Security \\
 \end{longtable}
-
-Three of these are connected. Encryption blocks two others: Keycloak cannot leave its development mode until it exists, and the disk check belongs to the same piece of work. The background jobs need scheduling because their schedule is declared in a file the deployment does not read, so none has ever run, including the one meant to close the session gap. And the activity log matters more than its position in the list suggests, because it holds patient data without the protection the audit trail has.
-
-Of the twenty-eight, ten belong to the server administrator or the hospital rather than to the application.

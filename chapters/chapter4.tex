@@ -7,7 +7,7 @@ This chapter describes how the security work was carried out. It covers how the 
 \section{Research Design}
 \label{sec:met-design}
 
-I planned the security work in seven steps: planning and requirements, choosing tools, design, building, testing before deployment, deployment, and checking afterwards. These were grouped under the functions of the NIST Cybersecurity Framework 2.0, and Figure \ref{fig:seven-phases} shows them. Five were completed. Deployment was carried out by a teammate and had not fully succeeded when this was written, and the checks that follow deployment had not begun; both are recorded in Section \ref{sec:conc-future}. The five that ran did not run once each in order. Every time I checked something, I found a reason to change a decision I had already made, so the design, the build and the testing each came round more than once. That is why I call the method build-and-check cycles. The seven steps say what I planned; the cycles say how it actually ran.
+I planned the security work in seven steps: planning and requirements, choosing tools, design, building, testing before deployment, deployment, and checking afterwards. These were grouped under the functions of the NIST Cybersecurity Framework 2.0, and Figure \ref{fig:seven-phases} shows them. Five were completed at the time this was written; deployment, carried out by a teammate, had not fully succeeded, and the checks that follow deployment had not begun. Deployment has since been completed, every fix verified locally during this work is now live on the hospital's server, though the post-deployment checks (Section \ref{sec:conc-future}) remain outstanding. The five phases that ran did not run once each in order. Every time I checked something, I found a reason to change a decision I had already made, so the design, the build and the testing each came round more than once. That is why I call the method build-and-check cycles. The seven steps say what I planned; the cycles say how it actually ran.
 
 \begin{figure}[H]
   \centering
@@ -48,6 +48,7 @@ HL7 FHIR & R5 & Security section only \\
 NIST SP 800-162 & 2014 & Definition and model of attribute-based access control \\
 OWASP Top 10 & 2021 & All ten categories rated against evidence \\
 NBC Technology and Cyber Risk Management Guidelines & 2026 & Access control, data security, audit trail and testing sections, used as a benchmark \\
+OWASP ASVS & 4.0.3 (2021) & Level 2 target, all 14 chapters assessed, 62 subsections checked \\
 STRIDE & --- & All six categories \\
 CIS Docker Benchmark & --- & Not applied; planned for a later phase \\
 OWASP Testing Guide & --- & Not applied; planned for a later phase \\
@@ -55,7 +56,9 @@ OWASP Testing Guide & --- & Not applied; planned for a later phase \\
 \end{tabular}
 \end{table}
 
-Each source did one job. The NIST Cybersecurity Framework gave the work its structure, the seven phases in Figure \ref{fig:seven-phases} follow its six functions \cite{nistcsf2}. The system's data model already follows FHIR, so FHIR's security section was the obvious place to look for decisions about signing in and encryption \cite{hl7fhir}. NIST SP 800-162 gave the access control model \cite{nist80162}. The OWASP Top 10 was the list I checked the code against \cite{owasp2021}. The National Bank of Cambodia's guidelines gave something to measure the result against, rather than a rule to comply with \cite{nbc2026}. STRIDE gave the six categories used in the threat model described next \cite{stride}.
+Each source did one job. The NIST Cybersecurity Framework gave the work its structure: the seven phases in Figure \ref{fig:seven-phases} follow its six functions \cite{nistcsf2}. The system's data model already follows FHIR, so FHIR's security section was the obvious place to look for decisions about signing in and encryption \cite{hl7fhir}. NIST SP 800-162 gave the access control model \cite{nist80162}. The OWASP Top 10 was the list I checked the code against \cite{owasp2021}. The National Bank of Cambodia's guidelines gave something to measure the result against, rather than a rule to comply with \cite{nbc2026}. The OWASP ASVS gave a second, more granular checklist: a separate pass at Level 2 across all fourteen chapters of the 4.0.3 edition, reported alongside the Top 10 results in Chapter \ref{chap:result} \cite{owaspasvs}. STRIDE gave the six categories used in the threat model described next \cite{stride}.
+
+HIPAA and ISO/IEC 27001 were also considered. HIPAA was set aside because it is United States legislation, and this hospital is in Cambodia. ISO 27001, and its healthcare companion ISO 27799, require building a full organisation-wide information security management system. This includes ongoing risk registers, management review cycles, and certification audits. That scope was too large for a single feature built during a six-month placement. NIST CSF was used instead, selectively, as already described.
 
 Two frameworks in the table were not used. The CIS Docker Benchmark checks how containers are set up and run. The OWASP Testing Guide sets out how to carry out a penetration test. Both belong to work that comes after deployment, neither had been done when this was written, and both are listed in Section \ref{sec:conc-future} as work that remains.
 
@@ -100,7 +103,7 @@ Elevation of privilege & A user gains rights they were not granted & Case creati
 
 Most of the findings are about people seeing what they should not, or doing what they should not. That is what you would expect from a system where five roles share the same cases. Both kinds are decided by the same three things: the user's role, whether the case is theirs, and how far the case has progressed.
 
-Denial of service was not covered in this phase. The system is only reachable inside the hospital, so nobody outside can attack it, which made it the lowest priority of the six categories. It stayed in scope but was not reached: availability depends mostly on the server rather than the software, and the time ran out before I got to it. It is recorded in Section \ref{sec:conc-future} as work that remains.
+Denial of service was not addressed in this phase. Being reachable only inside the hospital lowers the risk from an outside attacker. It does not remove the risk from a compromised or careless account inside the hospital. Testing for it was not reached in the time available. It is understood to be covered by Canadia Bank (IT security department)'s separate review, though those findings are confidential and not reproduced in this thesis. It is recorded in Section \ref{sec:conc-future}.
 
 \section{Tools and Technology}
 \label{sec:met-tools}
@@ -115,14 +118,14 @@ The tools fall into two groups: those the system is built from, and those used t
 \toprule
 \textbf{Purpose} & \textbf{Tool} & \textbf{Version} \\
 \midrule
-Identity provider & Keycloak & 26.6.4 \\
-Application framework & Next.js & 15.5.22 \\
+Identity provider & Keycloak & 26.7.2 \\
+Application framework & Next.js & 15.5.24 \\
 Session handling & Auth.js (NextAuth) & 5.0.0-beta.32 \\
 Database & PostgreSQL & 16 \\
 Database access and migrations & Prisma & 7.8.0 \\
 FHIR server & HAPI FHIR & 7.4.0 \\
 Hospital information system & ANZER, read-only & --- \\
-Deployment & Docker / Docker Compose & 29.6.1 / v5.1.4 \\
+Deployment & Docker / Docker Compose & 29.7.2 / v5.4.0 \\
 Static analysis & Semgrep & --- \\
 Container image scanning & Trivy & --- \\
 Dependency scanning & npm audit & npm 11.12.1 \\
@@ -134,6 +137,8 @@ Browser-driven testing & Puppeteer & 25.3.0 \\
 
 Semgrep and Trivy were run in July 2026. I did not fix which version of each tool was used, so both ran whatever release was current that day.
 
-Keycloak was chosen after an extended trial of Microsoft Entra ID. The hospital needed the system to run on hospital-owned servers, and Entra ID runs only as a cloud service. FHIR's security guidance recommends OAuth \cite{hl7fhir}, which Keycloak provides, so the choice also matched the standard the data model follows. Auth.js keeps a user logged in, and the version used is a beta, the makers have not marked it finished, though many production systems use it. CodeQL and Semgrep both read code looking for mistakes; CodeQL is free only for public code and this project is private, so I used Semgrep, which runs on my own machine.
+Keycloak was chosen after an extended trial of Microsoft Entra ID. The hospital needed the system to run on hospital-owned servers, and Entra ID runs only as a cloud service. Keycloak also supports user federation with the hospital's own Active Directory, so staff sign in with the same credentials they already use elsewhere in the hospital, rather than remembering a separate username and password for this system. The application itself never stores or handles user passwords, since sign-in is delegated to Keycloak and, through it, to the hospital's AD. This also matched FHIR's security guidance, which recommends OAuth \cite{hl7fhir}, so the choice fit both the hospital's requirements and the standard the data model follows. Auth.js keeps a user logged in, and the version used is a beta; the makers have not marked it finished, though many production systems use it.
 
-Each kind of data lives in a different place. Roles are held in Keycloak; the application reads them from the token. Patient records come from ANZER, which this project reads but does not own, change, or assess. Case data and the audit trail sit in the application's own PostgreSQL database. The FHIR server is bound to the local interface, so no other machine can reach it. Federation with the hospital's staff directory was planned but not built, so accounts are held directly in Keycloak.
+CodeQL and Semgrep both read code looking for mistakes; CodeQL is free only for public code and this project is private, so I used Semgrep, which runs on my own machine.
+
+Each kind of data lives in a different place. Roles are held in Keycloak; the application reads them from the token. Patient records come from ANZER, which this project reads but does not own, change, or assess. Case data and the audit trail sit in the application's own PostgreSQL database. The FHIR server is bound to the local interface, so no other machine can reach it.

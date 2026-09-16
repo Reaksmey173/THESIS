@@ -9,9 +9,9 @@ This chapter reports what the security work produced, and what those results mea
 
 \subsection{How the System Was Checked}
 
-The system was checked in two ways. Automated tools looked at three things: the outside packages the system uses, the container images it runs in, and the project's own code. Manual testing was done role by role on the running system, using one account for each role and following each case from creation to the insurer's decision. Both were done in the same period, on the same version of the system, and the rules being tested covered forty-one actions across five roles.
+The system was checked in two ways. Automated tools looked at three things: the outside packages the system uses, the container images it runs in, and the project's own code. Manual testing was done role by role on the running system, using one account for each role and following each case from creation to the insurer's decision. Both were done in the same period, on the same version of the system, and the rules being tested covered forty-two actions across five roles. The ASVS assessment described in Section \ref{sec:result-asvs} was carried out separately, later in the work, against a subsequent version of the system.
 
-Two checks were still to come. The hospital's IT Security Division had not yet tried to break into the system, and the container settings had not yet been checked against the CIS Docker Benchmark. Neither had been done when this was written.
+Two checks were still to come at the time of this assessment. The hospital's IT Security Division had not yet tried to break into the system, and the container settings had not yet been checked against the CIS Docker Benchmark. Neither had been done when this was written. Both have since occurred: Canadia Bank (IT security department) carried out a penetration test jointly with the hospital's IT Security Division, and separately reviewed the project's code and its containers. Their findings are confidential and are not reproduced in this thesis.
 
 \subsection{Package and Container Scanning}
 
@@ -27,18 +27,17 @@ npm packages & npm audit & 15: 2 critical, 4 high, 8 moderate, 1 low \\
 Keycloak 26.6.4 & Trivy & 16 high, 0 critical \\
 PostgreSQL 16 & Trivy & 72, then 55 after an update \\
 HAPI FHIR 7.4.0 & Trivy & 132: 27 critical, 105 high \\
-Repository and files & secretlint & No secrets found \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Every problem was in software the project uses rather than in code the team wrote, other people's libraries and container images. Updating the login library cleared both critical findings, taking the count from 15 to 13 with none critical. Eight of the remaining problems were in the application framework, and looked at first as though they needed a major upgrade. They did not: moving from version 15.5.20 to 15.5.22 was enough. One package, sharp, is still below the version its advisory asks for, because the fix offered would have undone the framework update. That was judged a step backwards, and it is recorded as an open item.
+Every problem was in software the project uses rather than in code the team wrote: third-party libraries and container images. Updating the login library cleared both critical findings, taking the count from 15 to 13 with none critical. Eight of the remaining problems were in the application framework, and looked at first as though they needed a major upgrade. They did not: moving from version 15.5.20 to 15.5.22 was enough. One package, sharp, is still below the version its advisory asks for, because the fix offered would have undone the framework update. That was judged a step backwards, and it is recorded as an open item.
 
 Updating the database image reduced its findings from 72 to 55, and its critical findings from 19 to 17; the rest have no fix available yet, so nothing can be installed. The FHIR server image was the worst of the three, and whether it is needed at all was raised as an open question for the team rather than treated as something to patch. Keycloak was also found to be keeping every account in its own built-in database, which its makers say not to use for real systems. It was reconfigured to use the PostgreSQL database already running alongside it, in a separate area with its own restricted login. The accounts on my own machine moved across keeping their original identifiers; any other installation starts with an empty Keycloak and needs its accounts created again.
 
 \subsection{Checking the Project's Own Code}
 
-CodeQL was planned for this step, but GitHub offers it free only on public repositories and a private one needs a paid licence. Semgrep was used instead, covering the same kinds of checks. It applied 257 rules across 356 files and returned 15 findings.
+Semgrep was used for this step; Section \ref{sec:met-tools} explains the choice over CodeQL. It applied 257 rules across 356 files and returned 15 findings. secretlint was also run over the repository and its files, checking for secrets left in the code such as passwords or API keys; it found none.
 
 \begin{table}[H]
 \centering
@@ -64,23 +63,25 @@ The path traversal was looked at more closely and could not be used. The databas
 
 \subsection{Manual Role-by-Role Testing}
 
+\subsubsection{What Was Found}
+
 A finding was counted as access control if it changed which users could do which action in which case. Findings about audit logging, sessions, input checking, data quality, and screen behaviour were counted separately. The logout defect was counted as access control rather than as a session problem, because its effect was that one user reached another user's account without logging in. On this basis the security phase recorded 47 findings, of which 23 were about access control.
 
 \begin{table}[H]
 \centering
 \caption{The 47 findings by type.}
 \label{tab:findings-by-type}
-\begin{tabular}{p{8.5cm}p{2cm}}
+\begin{tabular}{p{4.3cm}p{1.2cm}p{7.2cm}}
 \toprule
-\textbf{Type} & \textbf{Count} \\
+\textbf{Type} & \textbf{Count} & \textbf{Example} \\
 \midrule
-\textbf{Access control} & \textbf{23} \\
-Screens, data quality, workflow & 16 \\
-Audit and logging & 4 \\
-Input checking & 1 \\
-Sessions & 1 \\
-Deployment and configuration & 1 \\
-Closed, not a defect & 1 \\
+\textbf{Access control} & \textbf{23} & See Table \ref{tab:six-kinds} for the six sub-categories \\
+Screens, data quality, workflow & 16 & Field validation, labelling, and workflow-order issues not related to permissions \\
+Audit and logging & 4 & e.g.\ refused actions not written to the log \\
+Input checking & 1 & A single validation-related finding; specific detail not retained \\
+Sessions & 1 & Logging out left the Keycloak session open, letting the next user at a shared computer in without a password (fixed) \\
+Deployment and configuration & 1 & Keycloak had defaulted to its own built-in H2 database instead of the PostgreSQL database alongside it (fixed) \\
+Closed, not a defect & 1 & A finding investigated and confirmed as intended behaviour, not a bug; which one is not retained \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -112,9 +113,9 @@ Letting people through on failure & The disabled-account check allowed access wh
 Sessions outliving logout & Logging out left the Keycloak session open, so the next person at a shared computer entered the previous user's account \\
 \end{longtable}
 
-\subsection{Fixed and Left for Later}
+\subsubsection{What Was Done About It}
 
-Most findings were fixed before deployment. Twenty-four improvements were recorded as decisions to leave for later, each with a stated reason and an owner.
+Most findings were fixed before deployment. Twenty-three improvements were recorded as decisions to leave for later, each with a stated reason and an owner.
 
 \begin{longtable}{p{4.4cm}p{8.5cm}}
 \caption{Examples of work left for later, and why.}
@@ -133,21 +134,16 @@ Most findings were fixed before deployment. Twenty-four improvements were record
 \endfoot
 \bottomrule
 \endlastfoot
-Coordinator pricing fields stay unlocked & A deliberate safety valve. The team agrees changes in person, and the log records who edited \\
-Case deadline feature & Dropped from this phase. It is already inactive, since nothing on the server starts that job \\
-Duplicate drafts & Needs screen buttons that do not exist yet \\
-Appeal improvements & There is no button to start an appeal, and an appeal makes the doctors start again \\
+Duplicate drafts & Detection is built and working: a surgeon starting a case is warned of an existing draft and can jump to it. Deleting the old draft is possible but through a separate, general delete action, not linked to that warning; merging two drafts into one was never built \\
+Reversal (formerly ``appeal'') & Built as a complete feature, allowing Finance or an administrator to reopen a closed case and re-enter the workflow without starting over, but switched off behind a single flag pending a decision to enable it \\
 Refused sign-ins not recorded in the application log & Sign-in stops before the audit write; the attempts exist in Keycloak's log \\
-A refused user cannot switch accounts & No session is created, so signing out cannot end the identity provider's session \\
 \end{longtable}
 
-\subsection{Findings Worth Describing}
-
-The file holding the page rules sat at the top of the repository, while the application runs from a folder inside it. The framework only looks inside that folder, so it never found the file, and those rules had never run at all. Nothing was exposed, because the central module was checking every request anyway. It was left as it stood: switching on a gate that has never run means every page might behave differently, and that needs a full test pass across the whole system.
+The clearest illustration of a finding that carried more weight than it first appeared to have concerned the page-level access rules. The file holding those rules sat at the top of the repository, while the application runs from a folder inside it. The framework only looks inside that folder, so it never found the file, and those rules had never run at all. Nothing was exposed, because the central module described in Section \ref{sec:impl-access-model} was checking every request anyway. What only emerged later was that the file's own settings excluded those addresses entirely, so even had it loaded, it would never have guarded what it appeared to guard. It read as a control, and was never capable of being one. It was left as it stood: switching on a gate that has never run means every page might behave differently, and that needs a full test pass across the whole system.
 
 A related finding was fixed at once. A user who belonged to no group still received a working session, and could reach any page and any address that only asked whether someone was signed in, including a case list that returned every case. Sign-in is now refused when no valid role is found.
 
-Two findings concerned the point at which work should stop, and both were fixed. Doctors could change the diagnosis and the cost after Finance had reviewed the case, without Finance knowing, so Finance had committed to a figure the case no longer matched. Editing now stops the moment a case reaches Finance. This is the finding that shows the case's step has to be part of the rule: the doctor's role has not changed, and the case is still theirs, but the answer must change anyway. Separately, opening an unassigned case made it yours immediately, with no typing and no saving, and there was no way to hand it back. A case is now taken only when the anaesthetist saves or verifies it, and they can release it while it is still a draft.
+Two findings concerned the point at which work should stop, and both were fixed. Doctors could change the diagnosis and the cost after Finance had reviewed the case, without Finance knowing, so Finance had committed to a figure the case no longer matched. Editing now stops the moment a case reaches Finance. This is the finding that shows the case's step has to be part of the rule: the doctor's role has not changed, and the case is still theirs, but the answer must change anyway. Separately, opening an unassigned case made it the anaesthetist's immediately, with no typing and no saving, and there was no way to hand it back; this is described in Section \ref{sec:impl-access-model}, where the take/release rule that fixed it is set out alongside the rest of the access control model.
 
 Logging out cleared only the application's own session while the Keycloak session stayed open, so the next person at a shared computer entered the previous user's account with no password. Signing out now ends both.
 
@@ -155,15 +151,13 @@ The log had a gap too: it was written only after a successful action, so a refus
 
 A further gap sits earlier. When someone with a real account but no role is refused at sign-in, nothing is written to the application's log at all, no success, no failure, because sign-in stops before the point where anything is recorded. Those attempts appear only in Keycloak's own log, which is switched on, so an investigation has to look in two places rather than one.
 
-Two further weaknesses concern the audit trail itself. Records hold a reference to the user rather than the name as it stood at the time, and look the name up when the record is read, so a rename relabels every past entry for that person, including sign-ins and refused attempts. The same name reaches insurer emails, printed forms and the coordinator export, so a rename would also change documents that had already left the hospital. The path that made this reachable was closed, but the design is unchanged. Separately, administrators can open the audit trail while their own actions are recorded in it, so a privileged user can see what was captured about them. Both are design changes rather than fixes, and both are recorded for later. Neither would be found by a scanner, and role-by-role testing did not flag them either, because the system behaves exactly as it was built to.
+Two further weaknesses concern the audit trail itself. Records hold a reference to the user rather than the name as it stood at the time, and look the name up when the record is read, so a rename relabels every past entry for that person, including sign-ins and refused attempts. Separately, administrators can open the audit trail while their own actions are recorded in it, so a privileged user can see what was captured about them. Both are design changes rather than fixes, and both are recorded for later. Neither would be found by a scanner, and role-by-role testing did not flag them either, because the system behaves exactly as it was built to.
 
 Two findings concerned patient data, and neither has been resolved. Removing a patient identifier from the screen did not remove it from the data sent to the browser, where the identifier, the national ID and the phone number were still readable. Fixing this properly means sending only what each row needs and moving the search to the server, which was judged too large a change before go-live.
 
-The second concerned transport. The system runs over plain HTTP, which the browser reports directly: it shows the connection as not secure. Patient data and session cookies therefore cross the hospital network in the clear, and the strict-transport header has no effect without encryption. This is also a departure from a standard the project otherwise follows, since FHIR's security guidance states that production data should be sent over an encrypted connection \cite{hl7fhir}. Enabling encryption is a server or proxy configuration rather than an application change, and it is the most important item to resolve before the system carries real patient records.
+The second concerned transport. At the time, the system ran entirely over plain HTTP, which the browser reported directly: it showed the connection as not secure. The browser-facing connection has since been put behind HTTPS. Two internal connections remain unencrypted: Keycloak to the application, and Keycloak to Active Directory. Patient data and credentials passing over those two links still cross the hospital network in the clear. This is a partial departure from a standard the project otherwise follows, since FHIR's security guidance states that production data should be sent over an encrypted connection \cite{hl7fhir}. Encrypting the remaining two connections is a server configuration rather than an application change, and it is recorded in Section \ref{sec:conc-future}.
 
-Two further findings came to light during the final review, after the counts above were settled. The first concerns a second log. Alongside the audit trail, the system keeps an activity log of every successful request, including the request body, so it accumulates patient identifiers and clinical detail as a side effect of recording traffic. The audit trail is append-only, enforced by the database. The activity log has no such protection: its rows can be changed or deleted, and no retention period is set. Both logs need that protection, and only one has it.
-
-The second concerns the background jobs. Three exist, and none has ever run. All three declare their schedule in a file meant for a hosting service the project does not use, and nothing on the deployment server starts them. One of the three is the job that disables accounts Keycloak reports as disabled, so the gap it was written to close is still open in practice.
+Two further findings came to light during the final review, after the counts above were settled. The first concerns a second log, already introduced in Section \ref{sec:impl-audit}: the activity log accumulates patient identifiers and clinical detail as a side effect of recording traffic, and at the time it had no protection against being changed or deleted, unlike the audit trail. It has since been given the same append-only protection as the audit trail. The second concerns the background jobs described in Section \ref{sec:impl-deployment}: three existed, and at the time none had ever run. Each has since taken a different path. The account-disable job was superseded by the live dual-check design described in Section \ref{sec:impl-iam}. The slow-case warning job was kept and given a working trigger, an in-process timer rather than the originally planned OS-level scheduler. The deadline-closure job was retired outright rather than scheduled.
 
 \subsection{OWASP Top Ten Assessment}
 
@@ -177,20 +171,76 @@ Every category of the OWASP Top 10:2021 was rated against evidence from this pro
 \toprule
 \textbf{Rating} & \textbf{Categories} \\
 \midrule
-Strong & A01 access control, A06 outdated components, A07 authentication \\
-Partial & A02 cryptography, A03 injection, A04 design, A05 misconfiguration, A08 data integrity, A09 logging, A10 request forgery \\
+Strong & A07 authentication \\
+Partial & A01 access control, A02 cryptography, A03 injection, A04 design, A05 misconfiguration, A06 outdated components, A08 data integrity, A09 logging, A10 request forgery \\
 Needs work & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-No category was rated as needing work, though three of the partial ratings hold the largest open items. A02 covers encryption in transit and at rest: the system runs over plain HTTP, nobody checks whether the disk is encrypted, and the header telling browsers to insist on encryption does nothing until encryption is on. A05 covers the identity provider running a version past its end of life, an out-of-date FHIR server image, and Keycloak running in its development mode. That last one cannot be fixed on its own, because production mode will not start without encryption, so it waits on the same decision as A02. A fourth A05 item was fixed during the phase: Keycloak's built-in database, which was replaced by the PostgreSQL database already running alongside it.
+No category was rated as needing work, though several of the partial ratings hold real, current gaps. A01 was closed by the role-by-role testing described above rather than by a scanner, and most of it holds up well: object-level scoping and the case-assignment checks were fixed, and the Coordinator's access was narrowed to its own scope. It is not rated strong, because System Administrator currently has write access to clinical form data and cost figures through two routes, despite the system's own design stating this role should be view-only there; this is tracked as an open item in Section \ref{sec:conc-future}.
 
-A09 rests on an audit trail that cannot be changed or deleted, protected by the database itself, and that records refusals along with the reason. Against that sit three gaps: nothing watches the log as it fills, the activity log holds request bodies without the same protection, and the jobs meant to run on a schedule never run. The rating is partial because real controls exist and every gap is recorded, but the activity log is the one that would most change this assessment if it stays as it is.
+A02 covers encryption in transit and at rest: the browser-facing connection now runs over HTTPS, but two internal connections, Keycloak to the application and Keycloak to Active Directory, remain unencrypted, and nobody checks whether the disk is encrypted. A05 covers configuration hardening. Real security headers are set, and required secrets fail loudly rather than falling back to an insecure default, but Keycloak runs in its development mode even in the production deployment path, which its own documentation advises against, and no automated dependency or code scanning runs in the build pipeline to catch drift between releases. A fourth A05 item was fixed during the phase: Keycloak's built-in database, which was replaced by the PostgreSQL database already running alongside it.
 
-Two of the strong ratings still have something recorded against them. A06 rests on scanning and fixing packages and container images, but two remain out of date because no fix exists yet, and both are carried into Section \ref{sec:conc-future}. A07 relies on Keycloak, the password rules, account lockout and session handling, but there is no multi-factor authentication, which was deliberately left to a later phase.
+A09 rests on an audit trail that cannot be changed or deleted, protected by the database itself, and that records refusals along with the reason. At the time of this assessment, two gaps sat against that: nothing watched the log as it filled, and the activity log held request bodies without the same protection as the audit trail. The activity log has since been given the same append-only protection, closing that specific gap. What remains is narrower but still real: a sign-in refused for having no valid role writes nothing to either log, only to a server console outside the application's own record, and nothing watches either log as it fills.
 
-A01 was rated strong. It is also the one category no scanner could assess, it was closed by the role-by-role testing described above.
+A06 rests on scanning and fixing packages and container images, and was strong immediately after that work. It did not stay that way: a later dependency check found new advisories that were not present right after the fix, because no automated scanning step runs in the build pipeline to catch this drift between releases. The components in active use are still current; what is missing is a repeatable check, not a one-time fix, and that gap is recorded in Section \ref{sec:conc-future}. A07 relies on Keycloak, the password rules, account lockout and session handling, now strengthened further by completed AD federation and a live per-request account-status check; there is no multi-factor authentication, which was deliberately left to a later phase, but nothing found weakens this rating.
+
+\subsection{ASVS 4.0.3 Assessment}
+\label{sec:result-asvs}
+
+Alongside the OWASP Top 10 review, the system was separately assessed against the OWASP Application Security Verification Standard, version 4.0.3, targeting Level 2 \cite{owaspasvs}. ASVS is a more granular standard than the Top 10: rather than ten broad risk categories, it sets out roughly 280 individual requirements across fourteen chapters, covering areas the Top 10 does not break out on its own, such as session management, error handling, and business logic.
+
+A newer version, ASVS 5.0.0, was also available at the time, released in May 2025, but it was not used, for two reasons. First, its biggest change was making the standard's easiest level, Level 1, simpler to meet. That did not matter here, since this project was always aiming for the stricter Level 2. Second, its other major additions covered cloud-native systems and WebRTC, technologies this project deliberately does not use, since the system runs entirely on its own hospital-hosted server. One part of ASVS 5.0 did seem relevant, its improved coverage of OAuth and OIDC, the login standards this system relies on, so that is kept as a reason to check the system against ASVS 5.0 in the future, noted in Section \ref{sec:conc-future}.
+
+All fourteen chapters were assessed; none were skipped wholesale, though a small number of individual requirements were marked not applicable where the underlying feature does not exist in this system, for example, the requirements covering SOAP and GraphQL interfaces, since neither is used here, and self-service credential recovery, since accounts are provisioned rather than self-registered. Sixty-two subsections were checked in total: 29 were met, 20 partially met, 6 not met, and 7 not applicable. Level 2 was not fully achieved; no chapter was rated as fully met.
+
+\begin{longtable}{p{4.6cm}p{1.3cm}p{1.6cm}p{1.8cm}p{1.3cm}p{2cm}}
+\caption{ASVS 4.0.3 results by chapter.}
+\label{tab:asvs-results} \\
+\toprule
+\textbf{Chapter} & \textbf{Met} & \textbf{Partial} & \textbf{Not Met} & \textbf{N/A} & \textbf{Subsections} \\
+\midrule
+\endfirsthead
+\multicolumn{6}{@{}l}{\textbf{Table \thetable} \ldots continued} \\
+\toprule
+\textbf{Chapter} & \textbf{Met} & \textbf{Partial} & \textbf{Not Met} & \textbf{N/A} & \textbf{Subsections} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{6}{r}{\textit{Continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+V1 Architecture, Design and Threat Modelling & 5 & 3 & 1 & 0 & 9 \\
+V2 Authentication & 2 & 3 & 0 & 2 & 7 \\
+V3 Session Management & 5 & 1 & 0 & 1 & 7 \\
+V4 Access Control & 3 & 0 & 0 & 0 & 3 \\
+V5 Validation, Sanitization and Encoding & 2 & 2 & 0 & 1 & 5 \\
+V6 Cryptographic Storage (at Rest) & 1 & 1 & 1 & 1 & 4 \\
+V7 Error Handling and Logging & 0 & 3 & 1 & 0 & 4 \\
+V8 Data Protection & 1 & 1 & 1 & 0 & 3 \\
+V9 Communications & 1 & 1 & 0 & 0 & 2 \\
+V10 Malicious Code & 2 & 1 & 0 & 0 & 3 \\
+V11 Business Logic & 0 & 1 & 0 & 0 & 1 \\
+V12 Files and Resources & 5 & 0 & 1 & 0 & 6 \\
+V13 API and Web Service & 0 & 2 & 0 & 2 & 4 \\
+V14 Configuration & 2 & 1 & 1 & 0 & 4 \\
+\midrule
+\textbf{Total} & \textbf{29} & \textbf{20} & \textbf{6} & \textbf{7} & \textbf{62} \\
+\end{longtable}
+
+Each of the six not-met subsections sits in a different chapter, with no chapter failing more than one: no documented threat-modelling process or automated security scanning in the build pipeline (V1); patient data held in plain, unclassified columns with no field-level encryption (V6); no centralised log monitoring or alerting (V7); no data-retention or deletion policy (V8, the same gap noted below as deliberately deferred); no malware scanning or integrity check on uploaded files (V12); and minor server-fingerprinting headers left at their defaults (V14). Taken together, the weakest areas cluster around process and lifecycle gaps rather than exploitable code-level defects: nothing here is a working attack, but each is a control the standard expects that this project does not yet have.
+
+Fifteen findings were tracked (F1 through F15). Ten were resolved or substantially addressed during this work, including a critical Keycloak vulnerability allowing account takeover through a flaw in its credential-reset flow, fixed by upgrading the Keycloak version; eight high-severity dependency vulnerabilities, patched to bring the dependency scan to zero high or critical findings at the time; patient identifiers that were being sent as URL query parameters rather than in the request body, moved across four call sites; and an access-control gap on the patient-lookup endpoint that had no case-assignment check at all, closed by routing it through the same shared visibility check used elsewhere in the system. That dependency result did not stay at zero: a later check found new high-severity advisories in build-time tooling, disclosed after the original fix rather than caused by any reversal of it. No automated scanning step runs in the build pipeline to catch this kind of drift between releases, so a point-in-time fix does not stay verified on its own; this is recorded in Section \ref{sec:conc-future}.
+
+Three findings were left open at the time of the assessment. One concerns error messages that can leak internal detail to the browser rather than being suppressed outside of development. One concerned a developer sign-in shortcut that bypassed the normal login entirely. One concerns the lack of a step-up re-authentication requirement before high-consequence actions such as finalising or sending a request to the insurer. The remaining two are carried into Section \ref{sec:conc-future}.
+
+The developer sign-in shortcut was narrowed rather than fully removed. A loophole that let it activate outside a developer's own machine, on a staging server despite a production environment setting, was closed. The underlying shortcut itself is still present in the codebase, gated behind a flag that defaults to off and only takes effect in a non-production environment, such as a developer running the system locally. It is not reachable in the deployed system as configured, but it is not gone, and a future configuration change that enabled the flag outside a developer's own machine would bring it back. This is recorded as still open in Section \ref{sec:conc-future}, not as resolved.
+
+Two further findings were deliberately deferred rather than treated as defects. The first is the dead page-rule file already discussed in Section \ref{sec:result-layered}: the unused file itself was removed, but building the real route-level enforcement layer it was meant to provide was set aside, since enabling nineteen untested rules across five roles risked silently locking a working role out of something it needs, without a full test pass to catch that first. The second is the absence of any data-retention or deletion policy, recorded here as what it is, an organisational decision for the hospital to make, not something a fix to the code could resolve on its own.
+
+The assessment was carried out with AI assistance (Claude Sonnet 5), under my direction, consistent with the approach described in Section \ref{sec:met-design}: what to check, whether a finding was genuine, and what to fix or defer were my decisions, verified against the running system rather than accepted as reported.
 
 \section{Discussion}
 \label{sec:result-discussion}
@@ -232,24 +282,27 @@ A rule in a scanner describes the shape of code. It can spot a query built by jo
 
 What this project adds is a measurement from a working clinical system. On the same code, in the same period, a general-purpose scanner found nothing in this category while role-by-role testing found twenty-three problems, several of them serious. Zhu and colleagues report the closest comparison: automatic analysis of six applications found a set of vulnerabilities, and when developers gave the tool the application's own access control rules, twenty more appeared that the automatic methods had missed \cite{zhu2015}.
 
-A related gap appeared before any scanning was done. The access control rules were not written before the code, they were read out of it, because the code came first. Setting that description against the workflow the team needed showed that a substantial number of rules did not match what the hospital wanted, and that some expected actions did not exist at all. Sun, Xu and Su note that access control rules are specific to each application, which makes it hard to get a precise specification for a tool to enforce \cite{sun2011}. Here there was no specification to enforce against: it had to be recovered from the code first.
+A related gap appeared before any scanning was done. The access control rules were not written before the code; they were read out of it, because the code came first. Setting that description against the workflow the team needed showed that a substantial number of rules did not match what the hospital wanted, and that some expected actions did not exist at all. Sun, Xu and Su note that access control rules are specific to each application, which makes it hard to get a precise specification for a tool to enforce \cite{sun2011}. Here there was no specification to enforce against: it had to be recovered from the code first.
 
 The consequence is short. A clean scan is evidence about code patterns. It is not evidence that the right people can do the right things, and it should never be recorded as though it were.
 
 \subsection{Layered Checks, and the Guard That Never Ran}
+\label{sec:result-layered}
 
 The clearest illustration of layered checking came from a mistake. The file holding the page rules sat outside the folder the framework reads, so it never loaded, and that whole layer had been doing nothing for the life of the project. Nothing was exposed, because the central module was checking every request anyway. What only emerged later was that the file's own settings excluded those addresses entirely, so even had it loaded, it would never have guarded what it appeared to guard. It read as a control, and was never capable of being one.
 
-Two things follow. Nobody knew the layer was dead until it was found by accident, which is an argument for testing that a control actually runs rather than assuming it does because the code exists. A protection that has never run offers nothing, and it looks exactly like a working one until someone checks. The system survived because the decision was made in one place, which is what OWASP asks for, that access control be implemented once and reused throughout an application \cite{owasp2021}. That is not complete: some parts take the simpler check and then work out the assignment rule again in their own code, so the same rule sits in two places. Rules in two places drift apart, and this is recorded in Section \ref{sec:conc-future}.
+Two things follow. Nobody knew the layer was dead until it was found by accident, which is an argument for testing that a control actually runs rather than assuming it does because the code exists. A protection that has never run offers nothing, and it looks exactly like a working one until someone checks. The system survived because the decision was made in one place, which is what OWASP asks for, that access control be implemented once and reused throughout an application \cite{owasp2021}. That is not complete: at least eight other places in the code write their own separate copy of the same case-assignment rule instead of calling the shared check. All eight currently agree with each other, but only because each copy has a comment telling a developer to keep it matching the others by hand, nothing in the code forces them to match. This already went wrong once: one of those copies, in the part of the system that lets an anaesthetist open a case, fell out of step with the real rule, and for a time let a surgeon reach a case they had no right to see. It was found and corrected, but nothing stopped it from happening, and nothing stops the same drift from happening again in one of the other seven copies. Rules kept in more than one place drift apart, and this one already has; this is recorded in Section \ref{sec:conc-future}. The same inconsistency shows up in reverse elsewhere in the codebase: the route that manages user accounts checks permission before ever touching the database, so a non-administrator is blocked before the system reveals whether a given user ID is even real, the correct pattern already exists, it simply was not applied everywhere.
 
-The same pattern appeared twice more. In the path traversal finding, an attack failed only because a database check happened to run first, the system was safe, but not for the reason anyone had designed, and changing the order of steps later would have removed that protection without warning. And three background jobs are written, correct, and have never run: nothing on the deployment server starts them, and the one call that does reach a job uses a method the route does not accept, so it is rejected before anything executes. One of the three is the job meant to close the gap left by a session that cannot be withdrawn. The control exists, and the gap is still open.
+The same pattern appeared twice more. In the path traversal finding, an attack failed only because a database check happened to run first; the system was safe, but not for the reason anyone had designed, and changing the order of steps later would have removed that protection without warning. And three background jobs were written, correct, and never ran: nothing on the deployment server started them, and the one call that did reach a job used a method the route did not accept, so it was rejected before anything executed. Each has since taken a different path. One, the job meant to close the gap left by a session that cannot be withdrawn, was later superseded rather than fixed: a live check replaced it rather than the job itself being scheduled, which is a different way of closing a gap than the pattern this section is about, but it means that particular gap is no longer open. Another, the slow-case warning job, was given a working trigger, an in-process timer rather than the originally planned OS-level scheduler, so it now runs as intended, if by a less independent mechanism than first planned. The third, the deadline-closure job, was retired outright rather than fixed or scheduled.
 
 \subsection{What This Suggests for Similar Systems}
 
-Three points carry beyond this project.
+Four points carry beyond this project.
 
 Where a workflow hands responsibility from one group to another, the state of the work belongs in the permission rule alongside the role. Without it, the handover is not enforced at all.
 
 Where authorisation rules come from an organisation rather than from the code, they have to be tested by using the system as each role, because no scanner has access to them.
 
 And where a control matters, it is worth confirming that it runs. Code that exists and code that executes are not the same thing.
+
+Where a system's own rules say what a role should not be able to do, that has to be checked directly against the code, not assumed from a clean scan or from what the screens allow. A role's real reach can extend past its visible interface to routes with no button behind them, invisible to both a scanner and to testing done through the screens; catching that gap takes a third check, one that compares the code to the system's own stated rules rather than to what a scanner or a screen would show.
