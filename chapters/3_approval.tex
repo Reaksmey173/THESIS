@@ -13,7 +13,8 @@
 
     \vspace{1cm}
 
-
+\newlength{\committeelabelwidth}
+\settowidth{\committeelabelwidth}{\textbf{Committee chair:}}
 \begin{tabbing}
     \hspace{5cm} \= \hspace{6cm} \= \hspace{4cm} \kill
     \Large \textbf{Report Submission Approval} \> \> \\[0.5cm]
@@ -27,15 +28,15 @@
 \\
    \Large \textbf{Examination Committees} \> \> \\[0.5cm]
     
-    \makebox[3.2cm][l]{\textbf{Committee 01:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}}  \\
+    \makebox[\committeelabelwidth][l]{\textbf{Committee 01:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}}  \\
     \phantom{(Title, Institution)} \\
-    \makebox[3.2cm][l]{\textbf{Committee 02:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}}  \\
+    \makebox[\committeelabelwidth][l]{\textbf{Committee 02:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}}  \\
     \phantom{(Title, Institution)} \\
-    \makebox[3.2cm][l]{\textbf{Committee 03:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}}  \\
+    \makebox[\committeelabelwidth][l]{\textbf{Committee 03:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}}  \\
     \phantom{(Title, Institution)} \\
-    \makebox[3.2cm][l]{\textbf{Committee 04:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}}  \\
+    \makebox[\committeelabelwidth][l]{\textbf{Committee 04:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}}  \\
     \phantom{(Title, Institution)} \\
-    \makebox[3.2cm][l]{\textbf{Committee chair:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}} \\
+    \makebox[\committeelabelwidth][l]{\textbf{Committee chair:}}\underline{\hspace{5cm}}  \> \>\underline{\hspace{4cm}} \\
     \phantom{(Title, Institution)}
 \\
 \vspace{0.2cm}
