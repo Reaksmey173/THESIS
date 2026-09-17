@@ -28,7 +28,29 @@ A fourth pattern ran alongside these three. I passed changes to the teammate han
 
 Each cycle produced documents as well as code changes: the access control rules table, a record of each scan, an assessment against all ten OWASP categories, and a summary of what remained open and who owned it. I wrote these while working, not afterwards, and they are where the numbers in Chapter \ref{chap:result} come from.
 
-I used AI tooling to help write and investigate code, under my direction. What to examine, whether a finding was real, and what to fix or defer were my decisions. I checked what the tooling reported against the running system before accepting it, and several reports turned out to be wrong.
+I used AI tooling to help write and investigate code, under my direction. What to examine, whether a finding was real, and what to fix or defer were my decisions. I checked what the tooling reported against the running system before accepting it, and several reports turned out to be wrong. The placement taught me that AI can accelerate investigation and implementation, but it does not replace verification. Security decisions remained my responsibility, and outputs were accepted only after they were checked against the code, the running system, and the hospital's operational requirements.
+
+\subsection*{Stakeholder-Driven Security Design and Appreciative Inquiry}
+\addcontentsline{toc}{subsection}{Stakeholder-Driven Security Design and Appreciative Inquiry}
+
+The access rules in this thesis were not derived from security frameworks alone. They came from a weekly process the wider team already used at Intercare, following the company's I-C-A-R-E values, Innovation, Compassionate, Accountability, Responsive, and Empowered, through a structured cycle: Define, a relevant Value, Discover, Dream, Design, and Deliver.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\textwidth]{figs/Figure3-Appreciative-Inquiry-cycle.png}
+  \caption{The Appreciative Inquiry cycle used in weekly team meetings at Intercare, centred on the company's I-C-A-R-E values. Define and Deliver sit opposite each other in the cycle; Discover, Dream, and Design run between them, with the relevant Value checked at each stage.}
+  \label{fig:appreciative-inquiry}
+\end{figure}
+
+\begin{quote}
+Centre: Intercare Values (I-C-A-R-E). Step 1: Define. Name the topic to report on. Step 2: Value. Choose which of the five values, Innovation, Compassionate, Accountability, Responsive, Empowered, the topic connects to. Step 3: Discover. Give the detail of what was done, the problem, and the open question. Step 4: Dream. Decide what to do next, the ideal outcome. Step 5: Design. Decide how to get there. Step 6: Deliver. Assign who on the team will carry it out.
+\end{quote}
+
+The cycle repeated every Tuesday morning, and each week's Deliver step fed directly into the next week's Define.
+
+Each Tuesday morning, the three-person team, covering data and adaptation, development and communication, and security, took turns sharing what they had worked on that week. For each topic, the person presenting first defined it, then named which of the five values it connected to, before discovering the detail of what had been done, what problem or question had come up, and what remained open. From there, the group discussed what they wanted next, their dream for that piece of work, before moving to how it would actually be designed, and finally who would deliver it.
+
+This process was where the access rules in Chapter \ref{chap:impl} were actually decided, not just documented afterward. Rather than designing permissions from a security framework downward, the team went through each role in the workflow in turn, the surgeon, the anaesthetist, Finance, and the Coordinator, and discussed how each one actually worked on paper before agreeing how the same responsibility should work in the system. The clearest example of this is the shift described in Section \ref{sec:ps-background}: on paper, the Coordinator was a required step between the doctors and Finance. Deciding whether that should carry over into the digital system, or whether the doctors should pass a case to Finance directly, took several weeks of this weekly cycle to settle, since it meant Finance absorbing a step that used to belong to someone else, and every actor needed to understand and agree with the resulting shape of the workflow before it was built. The rule that resulted, described in Section 5.1.2, exists because of that discussion, not because of any security standard.
 
 \section{Frameworks and Standards Applied}
 \label{sec:met-frameworks}
@@ -55,16 +77,16 @@ NBC Technology and Cyber Risk Management Guidelines & 2026 & Access control, dat
 \hline
 OWASP ASVS & 4.0.3 (2021) & Level 2 target, all 14 chapters assessed, 62 subsections checked \\
 \hline
-STRIDE & --- & All six categories \\
+STRIDE & N/A & All six categories \\
 \hline
-CIS Docker Benchmark & --- & Not applied; planned for a later phase \\
+CIS Docker Benchmark & N/A & Not applied; planned for a later phase \\
 \hline
-OWASP Testing Guide & --- & Not applied; planned for a later phase \\
+OWASP Testing Guide & N/A & Not applied; planned for a later phase \\
 \hline
 \end{tabular}
 \end{table}
 
-Each source did one job. The NIST Cybersecurity Framework gave the work its structure: the seven phases in Figure \ref{fig:seven-phases} follow its six functions \cite{nistcsf2}. The system's data model already follows FHIR, so FHIR's security section was the obvious place to look for decisions about signing in and encryption \cite{hl7fhir}. NIST SP 800-162 gave the access control model \cite{nist80162}. The OWASP Top 10 was the list I checked the code against \cite{owasp2021}. The National Bank of Cambodia's guidelines gave something to measure the result against, rather than a rule to comply with \cite{nbc2026}. The OWASP ASVS gave a second, more granular checklist: a separate pass at Level 2 across all fourteen chapters of the 4.0.3 edition, reported alongside the Top 10 results in Chapter \ref{chap:result} \cite{owaspasvs}. STRIDE gave the six categories used in the threat model described next \cite{stride}.
+Each source did one job. The NIST Cybersecurity Framework gave the work its structure: the seven phases in Figure \ref{fig:seven-phases} follow its six functions \cite{nistcsf2}. The system's data model already follows FHIR, so FHIR's security section was the obvious place to look for decisions about signing in and encryption \cite{hl7fhir}. Citing FHIR's current security guidance is a reference to the most recent published guidance available, not a claim that the deployed FHIR server itself implements that same specification release; Table \ref{tab:tools} in Section \ref{sec:met-tools} gives the actual server and version in use. NIST SP 800-162 gave the access control model \cite{nist80162}. The OWASP Top 10 was the list I checked the code against \cite{owasp2021}. The National Bank of Cambodia's guidelines gave something to measure the result against, rather than a rule to comply with \cite{nbc2026}. The OWASP ASVS gave a second, more granular checklist: a separate pass at Level 2 across all fourteen chapters of the 4.0.3 edition, reported alongside the Top 10 results in Chapter \ref{chap:result} \cite{owaspasvs}. STRIDE gave the six categories used in the threat model described next \cite{stride}.
 
 HIPAA and ISO/IEC 27001 were also considered. HIPAA was set aside because it is United States legislation, and this hospital is in Cambodia. ISO 27001, and its healthcare companion ISO 27799, require building a full organisation-wide information security management system. This includes ongoing risk registers, management review cycles, and certification audits. That scope was too large for a single feature built during a six-month placement. NIST CSF was used instead, selectively, as already described.
 
@@ -75,7 +97,9 @@ I only used parts of each framework, so I cannot say the system complies with an
 \section{Threat Modelling}
 \label{sec:met-threat}
 
-I used STRIDE: spoofing, tampering, repudiation, information disclosure, denial of service, and elevation of privilege, to sort the threats this system faces. I applied it after the system was built, not before. Its job was to file what testing had already found, and to check that no kind of threat had been missed. STRIDE gave the six categories. My findings filled them.
+I used STRIDE: spoofing, tampering, repudiation, information disclosure, denial of service, and elevation of privilege, to sort the threats this system faces. This was a retrospective threat analysis: I applied it after the system was built, not before. Its job was to file what testing had already found, and to check that no kind of threat had been missed. STRIDE gave the six categories. My findings filled them.
+
+STRIDE suited this project for two practical reasons. The system was small enough that every part could be tested directly, rather than estimated in advance, so no separate scoring step was needed before testing began. The work was also done by one person, not a team, so a method requiring coordination across multiple stakeholders would not have fit.
 
 Five of the six hold defects found during this project. The sixth, denial of service, was not addressed, and is recorded as a limitation.
 
@@ -112,7 +136,7 @@ Elevation of privilege & A user gains rights they were not granted & Case creati
 
 Most of the findings are about people seeing what they should not, or doing what they should not. That is what you would expect from a system where five roles share the same cases. Both kinds are decided by the same three things: the user's role, whether the case is theirs, and how far the case has progressed.
 
-Denial of service was not addressed in this phase. Being reachable only inside the hospital lowers the risk from an outside attacker. It does not remove the risk from a compromised or careless account inside the hospital. Testing for it was not reached in the time available. It is understood to be covered by Canadia Bank (IT security department)'s separate review, though those findings are confidential and not reproduced in this Graduation Project Report. It is recorded in Section \ref{sec:conc-future}.
+Denial of service was not addressed in this phase. Being reachable only inside the hospital lowers the risk from an outside attacker. It does not remove the risk from a compromised or careless account inside the hospital. Testing for it was not reached in the time available. It is understood to be covered by Canadia Bank (IT security department)'s separate review, though those findings are confidential and not reproduced in this thesis. It is recorded in Section \ref{sec:conc-future}.
 
 \section{Tools and Technology}
 \label{sec:met-tools}
@@ -121,7 +145,7 @@ The tools fall into two groups: those the system is built from, and those used t
 
 \begin{table}[H]
 \centering
-\caption{Tools used in the system and in its verification.}
+\caption{Tools used in the system and in its verification, current versions at the time of writing.}
 \label{tab:tools}
 \begin{tabular}{|p{6cm}|p{4.5cm}|p{3.4cm}|}
 \hline
@@ -139,13 +163,13 @@ Database access and migrations & Prisma & 7.8.0 \\
 \hline
 FHIR server & HAPI FHIR & 7.4.0 \\
 \hline
-Hospital information system & ANZER, read-only & --- \\
+Hospital information system & ANZER, read-only & N/A \\
 \hline
 Deployment & Docker / Docker Compose & 29.7.2 / v5.4.0 \\
 \hline
-Static analysis & Semgrep & --- \\
+Static analysis & Semgrep & N/A \\
 \hline
-Container image scanning & Trivy & --- \\
+Container image scanning & Trivy & N/A \\
 \hline
 Dependency scanning & npm audit & npm 11.12.1 \\
 \hline

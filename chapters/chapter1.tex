@@ -2,7 +2,7 @@
 \label{chap:intro}
 \chaptermark{Introduction}
 
-This chapter introduces the setting of the project and the problem it addresses. It describes how Guarantee of Payment requests were handled at Intercare Hospital before the system was built. It then gives an overview of the hospital and the project, states the objectives of this Graduation Project Report, and outlines the structure of the chapters that follow.
+This chapter introduces the setting of the project and the problem it addresses. It describes how Guarantee of Payment requests were handled at Intercare Hospital before the system was built. It then gives an overview of the hospital and the project, states the objectives of this thesis, and outlines the structure of the chapters that follow.
 
 \section{Background of the Study}
 \label{sec:intro-background}
@@ -13,7 +13,7 @@ At Intercare Hospital in Phnom Penh, this process was carried out manually, and 
 
 Automating this process removes much of that effort, but it also changes where the risk sits. Information that once lived on paper in a single office now sits in a database that many people can reach across the hospital network. Decisions that were previously made in person, such as who is allowed to confirm a cost or approve a clinical statement, become rules written into software. A GOP request contains both clinical information about a patient and a financial commitment on behalf of the hospital, so a mistake in those rules is not only a privacy problem but a financial one.
 
-Security therefore could not be treated as something added after the system worked. It covers more than one question: who is allowed into the system, what each person may do once inside, what record is kept of what they did, and whether the software and servers the system runs on are themselves safe. These questions had to be answered alongside the workflow rather than after it. This Graduation Project Report describes the requirements that were identified, the security that was designed and built to meet them, and how the result was tested and revised.
+Security therefore could not be treated as something added after the system worked. It covers more than one question: who is allowed into the system, what each person may do once inside, what record is kept of what they did, and whether the software and servers the system runs on are themselves safe. These questions had to be answered alongside the workflow rather than after it. This thesis describes the requirements that were identified, the security that was designed and built to meet them, and how the result was tested and revised.
 
 \section{Company Overview}
 \label{sec:intro-company}
@@ -31,7 +31,7 @@ This project was carried out within the hospital's Digital Health department, wh
 
 The wider effort is planned in three phases. This project delivers Phase 1, built over six months as the internal foundation that later phases can extend without being rebuilt. Phase 1 covers the hospital's own side of the workflow: creating a case from patient and encounter data, building a cost estimate, generating the GOP request and its document output, tracking its status through approval, rejection or revision, and keeping an audit trail. The system does not connect to insurer systems. Finance reviews each case and sends the request from within the system; nothing goes out automatically. The insurer's reply arrives in a staff Outlook mailbox rather than in the system, so Finance records the answer by hand, and a case needing revision is corrected and sent again by the same path. Claims generation and submission belong to later phases. The system's data model follows the HL7 Fast Healthcare Interoperability Resources (FHIR) standard, which shaped several of the security decisions described later. At the time of writing, some parts of this workflow were complete and working, while others were still being finished.
 
-The system was built by a team of three students on industry placement, each from a different major: software engineering, data science and artificial intelligence, and cybersecurity. My major is cybersecurity, and I was responsible for the security of the system. That covered working out what needed to be protected, designing and building the controls to protect it, and testing whether they held. This Graduation Project Report describes that security work.
+The system was built by a team of three students on industry placement, each from a different major: software engineering, data science and artificial intelligence, and cybersecurity. My major is cybersecurity, and I was responsible for the security of the system. That covered working out what needed to be protected, designing and building the controls to protect it, and testing whether they held. This thesis describes that security work.
 
 The system was built for internal use within the hospital rather than for public access, and is hosted on the hospital's own servers rather than in the cloud. This decision shaped much of the security design, as the responsibility for protecting the system and the environment it runs on stays with the hospital.
 
@@ -48,10 +48,10 @@ The general objective of this work was to build security into the Guarantee of P
     \item To compare what each method detected, and to discuss what that means for verifying access control in systems of this kind.
 \end{enumerate}
 
-\section{Graduation Project Report Structure}
+\section{Thesis Structure}
 \label{sec:intro-structure}
 
-This Graduation Project Report is organised into seven chapters.
+This thesis is organised into seven chapters.
 
 \begin{itemize}
     \item Chapter \ref{chap:intro} introduces the setting, the hospital, the project, and the objectives of this work.

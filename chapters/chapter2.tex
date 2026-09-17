@@ -2,7 +2,7 @@
 \label{chap:ps}
 \chaptermark{Problem Statement}
 
-This chapter sets out the problem the project addresses. It describes how Guarantee of Payment requests were handled before the system was built, what that process cost the hospital, which part of it this Graduation Project Report is concerned with, and what the problem amounts to when stated in short.
+This chapter sets out the problem the project addresses. It describes how Guarantee of Payment requests were handled before the system was built, what that process cost the hospital, which part of it this thesis is concerned with, and what the problem amounts to when stated in short.
 
 \section{Background of the Problem}
 \label{sec:ps-background}
@@ -44,9 +44,9 @@ The paper carried its own record. The file showed who the doctors were, who hand
 \section{Scope of the Problem}
 \label{sec:ps-scope}
 
-Not all of the problems described above are addressed here. The security work covers signing in, what each user may do, how their actions are recorded, and the security of the software the system runs on. It also covers the administration screens themselves: the interface for enabling and disabling accounts, and the view onto the audit trail. The application logic, the integration with the hospital information system, and the database design were the work of my teammates, and appear in this Graduation Project Report only where a security decision depends on them.
+Not all of the problems described above are addressed here. The security work covers signing in, what each user may do, how their actions are recorded, and the security of the software the system runs on. It also covers the administration screens themselves: the interface for enabling and disabling accounts, and the view onto the audit trail. The application logic, the integration with the hospital information system, and the database design were the work of my teammates, and appear in this thesis only where a security decision depends on them.
 
-The system is only reachable inside the hospital, so the realistic risk is a member of staff doing something they should not, rather than an outside attacker. Two checks were outstanding at the time this scope was set: a penetration test by the hospital's IT Security Division, and a review of the container settings against the Center for Internet Security (CIS) Docker Benchmark. The first has since been carried out, by Canadia Bank (IT security department) together with the hospital's IT Security Division. The second, the container review, has also since been carried out by Canadia Bank (IT security department), though not confirmed as following the CIS Docker Benchmark specifically. Going live also required a signed non-disclosure agreement, hospital approval, and privacy safeguards, all agreed at the start of the project.
+Because the system is not internet-facing, this phase focused primarily on authenticated internal users, compromised internal accounts, and misuse of legitimate access, while recognising that external compromise could still occur indirectly through the hospital network, for instance through a stolen credential, a compromised endpoint, or lateral movement from elsewhere on the network. Two checks were outstanding at the time this scope was set: a penetration test by the hospital's IT Security Division, and a review of the container settings against the Center for Internet Security (CIS) Docker Benchmark. The first has since been carried out, by Canadia Bank (IT security department) together with the hospital's IT Security Division. The second, the container review, has also since been carried out by Canadia Bank (IT security department), though not confirmed as following the CIS Docker Benchmark specifically. Going live also required a signed non-disclosure agreement, hospital approval, and privacy safeguards, all agreed at the start of the project.
 
 \section{Summary of the Problem}
 \label{sec:ps-summary}
