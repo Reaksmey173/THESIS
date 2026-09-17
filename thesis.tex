@@ -134,6 +134,9 @@ fill=green!30]
 \usepackage{multirow}
 \usepackage{longtable}
 \usepackage[font=singlespacing, labelfont=bf]{caption}
+\usepackage{chngcntr}
+\counterwithout{figure}{chapter}
+\counterwithout{table}{chapter}
 
 %Hints
 \newcommand\pic[1]{(Fig. \ref{#1})} %Ref on figure
