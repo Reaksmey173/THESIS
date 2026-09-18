@@ -20,7 +20,7 @@ jobs:
       - name: Compile LaTeX
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: thesis.tex
+          root_file: 6023010017_EB_Reaksmey_GraduationProject_2026.tex
           latexmk_use_xelatex: false
 
       - name: Upload PDF as artifact (PR preview only)
@@ -28,20 +28,20 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: thesis-pdf-preview
-          path: thesis.pdf
+          path: 6023010017_EB_Reaksmey_GraduationProject_2026.pdf
 
       - name: Move PDF into output/ (push/dispatch only)
         if: github.event_name != 'pull_request'
         run: |
           mkdir -p output
-          mv thesis.pdf output/thesis.pdf
+          mv 6023010017_EB_Reaksmey_GraduationProject_2026.pdf output/6023010017_EB_Reaksmey_GraduationProject_2026.pdf
 
       - name: Commit and push compiled PDF (push/dispatch only)
         if: github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/thesis.pdf
+          git add output/6023010017_EB_Reaksmey_GraduationProject_2026.pdf
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
