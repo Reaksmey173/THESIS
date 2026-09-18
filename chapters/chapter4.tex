@@ -33,7 +33,7 @@ I used AI tooling to help write and investigate code, under my direction. What t
 \subsection*{Stakeholder-Driven Security Design and Appreciative Inquiry}
 \addcontentsline{toc}{subsection}{Stakeholder-Driven Security Design and Appreciative Inquiry}
 
-The access rules in this thesis were not derived from security frameworks alone. They came from a weekly process the wider team already used at Intercare, following the company's I-C-A-R-E values, Innovation, Compassionate, Accountability, Responsive, and Empowered, through a structured cycle: Define, a relevant Value, Discover, Dream, Design, and Deliver.
+The access rules in this Graduation Project Report were not derived from security frameworks alone. They came from a weekly process the wider team already used at Intercare, following the company's I-C-A-R-E values, Innovation, Compassionate, Accountability, Responsive, and Empowered, through a structured cycle: Define, a relevant Value, Discover, Dream, Design, and Deliver.
 
 \begin{figure}[H]
   \centering
@@ -86,7 +86,7 @@ Each source did one job. The NIST Cybersecurity Framework gave the work its stru
 
 HIPAA and ISO/IEC 27001 were also considered. HIPAA was set aside because it is United States legislation, and this hospital is in Cambodia. ISO 27001, and its healthcare companion ISO 27799, require building a full organisation-wide information security management system. This includes ongoing risk registers, management review cycles, and certification audits. That scope was too large for a single feature built during a six-month placement. NIST CSF was used instead, selectively, as already described.
 
-Two frameworks in the table were not used. The CIS Docker Benchmark checks how containers are set up and run. The OWASP Testing Guide sets out how to carry out a penetration test. Both belong to work that comes after deployment, neither had been done when this was written, and both are listed in Section \ref{sec:conc-future} as work that remains.
+Two frameworks in the table were not used. The CIS Docker Benchmark checks how containers are set up and run. The OWASP Testing Guide sets out how to carry out a penetration test. Both belong to work that comes after deployment, and neither had been done when this was written. Both have since been carried out by Canadia Bank, described in Section \ref{sec:ps-scope}, and their relationship to these two specific frameworks was judged settled enough not to need further tracking in Section \ref{sec:conc-future}.
 
 I only used parts of each framework, so I cannot say the system complies with any of them. What I can say is which specific requirements were met and which were not, and each one comes from a document I can point to. Read Chapter \ref{chap:result} that way, as findings measured against requirements, not as proof of compliance.
 
@@ -132,7 +132,7 @@ Elevation of privilege & A user gains rights they were not granted & Fixed; find
 
 Most of the findings are about people seeing what they should not, or doing what they should not. That is what you would expect from a system where five roles share the same cases. Both kinds are decided by the same three things: the user's role, whether the case is theirs, and how far the case has progressed.
 
-Denial of service was not addressed in this phase. Being reachable only inside the hospital lowers the risk from an outside attacker. It does not remove the risk from a compromised or careless account inside the hospital. Testing for it was not reached in the time available. It is understood to be covered by Canadia Bank (IT security department)'s separate review, though those findings are confidential and not reproduced in this thesis. It is recorded in Section \ref{sec:conc-future}.
+Denial of service was not addressed in this phase. Being reachable only inside the hospital lowers the risk from an outside attacker. It does not remove the risk from a compromised or careless account inside the hospital. Testing for it was not reached in the time available. It is understood to be covered by Canadia Bank (IT security department)'s separate review, though those findings are confidential and not reproduced in this Graduation Project Report. It is recorded in Section \ref{sec:conc-future}.
 
 \section{Tools and Technology}
 \label{sec:met-tools}
