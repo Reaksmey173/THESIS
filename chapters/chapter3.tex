@@ -2,9 +2,9 @@
 \label{chap:lr}
 \chaptermark{Literature Review}
 
-This chapter reviews the existing work this project uses. The work covered the security of the system as a whole: signing in, what each user may do, how their actions are recorded, and the security of the software the system runs on. A systematic review of access control in electronic health record systems groups this field into identification, authentication, authorisation and accountability \cite{cobrado2024}, and those four categories match the strands of work described in Chapter \ref{chap:met}.
+This chapter reviews the existing work this project uses. The work covered the security of the system as a whole: signing in, what each user may do, how their actions are recorded, and the security of the software the system runs on. A systematic review of access control in electronic health record systems groups this field into four categories, discussed in section \ref{sec:lr-rbac-abac}, and those categories match the strands of work described in Chapter \ref{chap:impl}.
 
-The review is weighted towards authorisation, because that is what most of this project's findings are about. Section \ref{sec:lr-rbac-abac} covers the models of authorisation and what each can express. Section \ref{sec:lr-standards} covers the standards that apply to health information systems, which between them address identification, authentication, transport and audit. Section \ref{sec:lr-threat} covers threat modelling. Section \ref{sec:lr-verification} covers how access control is verified, which is where the main result of this project lies.
+The review is weighted towards authorisation, because that is what most of this project's findings are about. Section \ref{sec:lr-rbac-abac} covers the models of authorisation and what each can express. Section \ref{sec:lr-standards} covers the standards and frameworks applied, both health-specific and general, which between them address authentication, transport and audit. Section \ref{sec:lr-threat} covers threat modelling. Section \ref{sec:lr-verification} covers how access control is verified, which is where the main result of this project lies.
 
 \section{Access Control Models: RBAC and ABAC}
 \label{sec:lr-rbac-abac}
@@ -19,7 +19,7 @@ Work on access control in health systems has followed the same direction. A syst
 
 The three inputs are not alternatives. Roles carry the decisions that follow the job, attributes carry those that depend on the individual record, and the case's position in the workflow carries those that depend on how far it has progressed. What neither standard describes is how they combine in practice, what it costs to enforce them consistently, or how such rules can be checked once built. Chapters \ref{chap:impl} and \ref{chap:result} report that.
 
-\section{Security Standards for Health Information Systems}
+\section{Security Standards and Frameworks}
 \label{sec:lr-standards}
 
 Health information systems carry data that is sensitive in ways ordinary business systems are not. FHIR's security guidance was the health-specific source used here. It is unusual in addressing implementation directly: it recommends OAuth for authenticating users, states that production data should be sent over TLS, describes how audit events should be recorded, and sets out how a server should respond when access is refused \cite{hl7fhir}.
@@ -28,13 +28,13 @@ No Cambodian standard exists for health information security that a hospital can
 
 The guidelines require role-based access control with least privilege, a maintained access control matrix, segregation of duties so that no single person can enter, authorise and complete a transaction, audit logs that record both successful and refused access and cannot be altered, encryption of data in transit and at rest, and vulnerability assessment using both automated tools and manual techniques \cite{nbc2026}. They also note that Cambodia's adoption of technology is outpacing its regulatory frameworks, and direct institutions to adopt recognised standards where no local regulation exists \cite{nbc2026}.
 
-Two general frameworks are relevant alongside FHIR: the NIST Cybersecurity Framework, which organises security work into six functions (Govern, Identify, Protect, Detect, Respond and Recover) \cite{nistcsf2}, and the OWASP Top 10, a list of the ten most common categories of web application security risk \cite{owasp2021}. Chapter \ref{chap:met} describes how each was applied.
+Two general frameworks are relevant alongside FHIR: the NIST Cybersecurity Framework, which organises security work into six functions (Govern, Identify, Protect, Detect, Respond and Recover) \cite{nistcsf2}, and the OWASP Top 10, a list of the ten most common categories of web application security risk. The 2021 edition is the one used in this project \cite{owasp2021}. Chapter \ref{chap:met} describes how each was applied.
 
 OWASP also publishes the Application Security Verification Standard (ASVS), a checklist of individual, checkable requirements rather than broad categories. Version 4.0.3, released in 2021, sets out roughly 280 requirements across fourteen chapters, covering areas the Top 10 does not break out on its own, such as session management, error handling, and business logic. It also defines three verification levels, from a basic minimum to the most rigorous, so a system can be checked against a level appropriate to what it handles. A newer version, ASVS 5.0.0, was released in May 2025 and is described by OWASP as its most substantial revision to date \cite{owaspasvs}. OWASP updated the Top 10 itself in 2025, reordering its categories \cite{owasp2025}.
 
 Two standards specific to healthcare were also considered. The Health Insurance Portability and Accountability Act (HIPAA) sets security requirements for healthcare data in the United States \cite{hipaa}. ISO/IEC 27001 sets requirements for an organisation-wide information security management system. Its companion, ISO 27799, adapts those requirements to health information specifically. It cannot be used on its own; it still requires ISO 27001 as its foundation \cite{iso27001}.
 
-None of these standards states who in a particular hospital may perform a particular action on a particular case. Each addresses authentication, data protection, or general code quality, but none reaches down to a specific organisation's division of responsibility. Those rules have to be drawn from the workflow itself, which is where Chapter \ref{chap:impl} begins.
+None of these standards states who in a particular hospital may perform a particular action on a particular case. Each addresses authentication, data protection, or general code quality, but none reaches down to a specific organisation's division of responsibility. Those rules have to be drawn from the workflow itself, which is where Chapter \ref{chap:met} begins.
 
 \section{Threat Modelling Approaches}
 \label{sec:lr-threat}

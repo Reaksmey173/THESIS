@@ -22,7 +22,7 @@ I did not begin from a written table. The code already existed, written by my te
 
 The second check was manual testing, role by role, on the running system on my own machine. I signed in with one account for each of the five roles and followed a case from creation through to the insurer's decision. Where the system behaved differently from the rules, I recorded a finding. I then either fixed it, left it with a written reason, or closed it because the system was right and the rule was wrong.
 
-The third check used automated tools on the same version of the code, in the same period: one for the packages the system depends on, one for the container images, one for passwords left in files, and one for the team's own code. I ran the scanners and the manual testing on the same version at the same time, on purpose. It means the two sets of findings can be compared directly, rather than across a version that had changed in between.
+The third check used automated tools on the same version of the code, in the same period: one for the packages the system depends on, one for the container images, and one for the team's own code and any passwords left in it. I ran the scanners and the manual testing on the same version at the same time, on purpose. It means the two sets of findings can be compared directly, rather than across a version that had changed in between.
 
 A fourth pattern ran alongside these three. I passed changes to the teammate handling deployment, and when a problem turned out to be on the security side, it was reported back to me, I corrected it, and passed it on again. Some problems only appeared once the system was installed, and those reached me through those reports rather than through my own testing.
 
@@ -44,9 +44,9 @@ The access rules in this thesis were not derived from security frameworks alone.
 
 The cycle repeated every Tuesday morning, and each week's Deliver step fed directly into the next week's Define.
 
-Each Tuesday morning, the three-person team, covering data and adaptation, development and communication, and security, took turns sharing what they had worked on that week. For each topic, the person presenting first defined it, then named which of the five values it connected to, before discovering the detail of what had been done, what problem or question had come up, and what remained open. From there, the group discussed what they wanted next, their dream for that piece of work, before moving to how it would actually be designed, and finally who would deliver it.
+Each Tuesday morning, the three-person team, covering data and adaptation, development and communication, and security, took turns presenting what we had worked on that week, with my supervisor present at every session, and often joined and supported by others from the IT team, the Finance team, the Coordinator team, or the Doctors. For each topic, the person presenting first defined it, then named which of the five values it connected to, before discovering the detail of what had been done, what problem or question had come up, and what remained open. From there, the group discussed what they wanted next, their dream for that piece of work, before moving to how it would actually be designed, and finally who would deliver it.
 
-This process was where the access rules in Chapter \ref{chap:impl} were actually decided, not just documented afterward. Rather than designing permissions from a security framework downward, the team went through each role in the workflow in turn, the surgeon, the anaesthetist, Finance, and the Coordinator, and discussed how each one actually worked on paper before agreeing how the same responsibility should work in the system. The clearest example of this is the shift described in Section \ref{sec:ps-background}: on paper, the Coordinator was a required step between the doctors and Finance. Deciding whether that should carry over into the digital system, or whether the doctors should pass a case to Finance directly, took several weeks of this weekly cycle to settle, since it meant Finance absorbing a step that used to belong to someone else, and every actor needed to understand and agree with the resulting shape of the workflow before it was built. The rule that resulted, described in Section 5.1.2, exists because of that discussion, not because of any security standard.
+This process was where the access rules in Chapter \ref{chap:impl} were actually decided, not just documented afterwards. Rather than designing permissions from a security framework downward, the team went through each role in the workflow in turn, the surgeon, the anaesthetist, Finance, and the Coordinator, and discussed how each one actually worked on paper before agreeing how the same responsibility should work in the system. The clearest example of this is the shift described in Section \ref{sec:ps-background}: on paper, the Coordinator was a required step between the doctors and Finance. Deciding whether that should carry over into the digital system, or whether the doctors should pass a case to Finance directly, took several weeks of this weekly cycle to settle, since it meant Finance absorbing a step that used to belong to someone else, and every actor needed to understand and agree with the resulting shape of the workflow before it was built. The rule that resulted, described in Section 5.1.2, exists because of that discussion, not because of any security standard.
 
 \section{Frameworks and Standards Applied}
 \label{sec:met-frameworks}
@@ -63,7 +63,7 @@ I applied frameworks selectively rather than in full. Table \ref{tab:frameworks}
 \hline
 NIST Cybersecurity Framework & 2.0 (2024) & Six functions used to organise the work; control set not implemented \\
 \hline
-HL7 FHIR & R5 & Security section only \\
+HL7 FHIR & R5 (guidance cited) & Security section only \\
 \hline
 NIST SP 800-162 & 2014 & Definition and model of attribute-based access control \\
 \hline
@@ -100,15 +100,15 @@ STRIDE suited this project for two practical reasons. The system was small enoug
 Five of the six hold defects found during this project. The sixth, denial of service, was not addressed, and is recorded as a limitation.
 
 \begin{longtable}{|p{2.8cm}|p{4.3cm}|p{6.8cm}|}
-\caption{STRIDE categories and the defects found in each.}
+\caption{STRIDE categories and how each was addressed.}
 \label{tab:stride} \\
 \hline
-\textbf{Category} & \textbf{Threat in this system} & \textbf{What was found} \\
+\textbf{Category} & \textbf{Threat in this system} & \textbf{Status} \\
 \hline
 \endfirsthead
 \multicolumn{3}{@{}l}{\textbf{Table \thetable} \ldots continued} \\
 \hline
-\textbf{Category} & \textbf{Threat in this system} & \textbf{What was found} \\
+\textbf{Category} & \textbf{Threat in this system} & \textbf{Status} \\
 \hline
 \endhead
 \hline
@@ -116,17 +116,17 @@ Five of the six hold defects found during this project. The sixth, denial of ser
 \endfoot
 \hline
 \endlastfoot
-Spoofing & Someone acts as a user they are not & A user belonging to no group received a valid session and could read every case. Signing out left the identity provider's session open, so the next person at a shared computer entered the previous user's account without a password. \\
+Spoofing & Someone acts as a user they are not & Fixed; findings detailed in Section \ref{sec:result-manual} \\
 \hline
-Tampering & Case data changed by someone who should not be able to, or at a point when it should be locked & Doctors could alter the diagnosis and the cost after Finance had reviewed the case. Prices could be changed on cases already submitted or closed. A user could change their own display name, which relabelled every past audit entry for that person. \\
+Tampering & Case data changed by someone who should not be able to, or at a point when it should be locked & Mostly fixed; one open item remains (Section \ref{sec:conc-future}) \\
 \hline
-Repudiation & Someone denies an action, and the record cannot prove otherwise & When the system refused someone, it recorded nothing. Audit entries could not show which role had acted. A refused sign-in is recorded nowhere in the application, because sign-in stops before anything is written. Those attempts appear only in Keycloak's own log, so an investigation has to look in two places. The log stores a reference to the user, and looks up the name when the record is read. So a change of name changes every past entry for that person. \\
+Repudiation & Someone denies an action, and the record cannot prove otherwise & Mostly fixed; one open item remains (Section \ref{sec:conc-future}) \\
 \hline
-Information disclosure & Data reaches someone who should not see it & A surgeon's list included other surgeons' cases. Finance saw every case by dropping one URL parameter. Every role could read the full staff directory, including email addresses. Removing a patient identifier from the screen did not remove it from the data sent to the browser, where it can still be read. The connection is not encrypted, so patient data and session cookies cross the hospital network in readable form. \\
+Information disclosure & Data reaches someone who should not see it & Mostly fixed; a field-exposure gap and two unencrypted internal connections remain open (Section \ref{sec:conc-future}) \\
 \hline
-Denial of service & The system is knocked over so nobody can use it & Not addressed in this phase. \\
+Denial of service & The system is knocked over so nobody can use it & Not addressed in this phase \\
 \hline
-Elevation of privilege & A user gains rights they were not granted & Case creation was open to three roles instead of one. Submit and finalise sat with the wrong role. The page-level guard never ran at all. If creating a user's database record fails, the error is logged but the sign-in continues, so a session can exist with no record behind it. \\
+Elevation of privilege & A user gains rights they were not granted & Fixed; findings detailed in Section \ref{sec:result-manual} \\
 \hline
 \end{longtable}
 
@@ -155,7 +155,7 @@ Session handling & Auth.js (NextAuth) & 5.0.0-beta.32 \\
 \hline
 Database & PostgreSQL & 16 \\
 \hline
-Database access and migrations & Prisma & 7.8.0 \\
+Database access and migrations & Prisma & 7.8.0 (client), 7.10.0 (CLI) \\
 \hline
 FHIR server & HAPI FHIR & 7.4.0 \\
 \hline

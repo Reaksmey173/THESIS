@@ -22,18 +22,18 @@ Intercare Hospital is a private healthcare provider in Phnom Penh, Cambodia, bas
 
 The hospital opened in 2020 as a general practice clinic and has added services each year since: laboratory and imaging in 2021, maternity, inpatient and emergency care in 2022, and operating theatre services, physiotherapy and a visa health check centre in 2023. Paediatrics, a child wellbeing centre and a set of community clinics under the Intercare Express name followed, with a medical centre in Siem Reap planned \cite{intercare}.
 
-The hospital employs more than two hundred medical professionals, Cambodian and international, representing over twenty nationalities, and treats Cambodian families, expatriates, company employees and travellers. Care is provided in partnership with more than forty insurance providers, which makes the Guarantee of Payment process a routine part of daily work rather than an occasional task \cite{intercare}.
+The hospital employs more than two hundred medical professionals, Cambodian and international, representing over twenty nationalities, and treats Cambodian families, expatriates, company employees and travellers. The hospital's services are delivered in partnership with more than forty insurance providers, which makes the Guarantee of Payment process a routine part of daily work rather than an occasional task \cite{intercare}.
 
 \section{Project Overview}
 \label{sec:intro-project}
 
 This project was carried out within the hospital's Digital Health department, which is responsible for the systems that support clinical and administrative work. The aim was to replace the manual cost estimation and Guarantee of Payment process with a web-based system, so that a request could be prepared, reviewed and sent from one place instead of being assembled by hand across several departments.
 
-The wider effort is planned in three phases. This project delivers Phase 1, built over six months as the internal foundation that later phases can extend without being rebuilt. Phase 1 covers the hospital's own side of the workflow: creating a case from patient and encounter data, building a cost estimate, generating the GOP request and its document output, tracking its status through approval, rejection or revision, and keeping an audit trail. The system does not connect to insurer systems. Finance reviews each case and sends the request from within the system; nothing goes out automatically. The insurer's reply arrives in a staff Outlook mailbox rather than in the system, so Finance records the answer by hand, and a case needing revision is corrected and sent again by the same path. Claims generation and submission belong to later phases. The system's data model follows the HL7 Fast Healthcare Interoperability Resources (FHIR) standard, which shaped several of the security decisions described later. At the time of writing, some parts of this workflow were complete and working, while others were still being finished.
+The wider effort is planned in three phases. This project delivers Phase 1, built over six months as the internal foundation that later phases can extend without being rebuilt. Phase 1 covers the hospital's own side of the workflow: creating a case from patient and encounter data, building a cost estimate, generating the GOP request and its document output, tracking its status through approval, rejection or revision, and keeping an audit trail. The system does not connect to insurer systems. Finance reviews each case and sends the request from within the system; nothing goes out automatically. The insurer's reply arrives in a staff Outlook mailbox rather than in the system, so Finance records the answer by hand, and a case needing revision is corrected and sent again by the same path. Claims generation and submission belong to later phases. The system's data model follows the HL7 FHIR standard, Fast Healthcare Interoperability Resources (FHIR), which shaped several of the security decisions described later. At the time of writing, some parts of this workflow were complete and working, while others were still being finished.
 
 The system was built by a team of three students on industry placement, each from a different major: software engineering, data science and artificial intelligence, and cybersecurity. My major is cybersecurity, and I was responsible for the security of the system. That covered working out what needed to be protected, designing and building the controls to protect it, and testing whether they held. This thesis describes that security work.
 
-The system was built for internal use within the hospital rather than for public access, and is hosted on the hospital's own servers rather than in the cloud. This decision shaped much of the security design, as the responsibility for protecting the system and the environment it runs on stays with the hospital.
+The system was built for internal use within the hospital rather than for public access, and runs on the hospital's own servers, not in the cloud. This means no outside cloud provider shares any responsibility for security. The hospital alone is responsible for protecting the system and the server it runs on. This shaped much of the security design.
 
 \section{Research Objectives}
 \label{sec:intro-objectives}
@@ -41,7 +41,7 @@ The system was built for internal use within the hospital rather than for public
 The general objective of this work was to build security into the Guarantee of Payment system as it was developed, rather than adding it once the system was working. The specific objectives were as follows.
 
 \begin{enumerate}
-    \item To identify what the system needs to protect, and to establish the security requirements of the workflow, including the separations between roles that already exist in hospital practice.
+    \item To identify what the system needs to protect, and to establish the security requirements of the workflow through structured engagement with the hospital's clinical, financial, and administrative stakeholders, including the separations between roles that already exist in hospital practice.
     \item To select security standards suitable for a small internal health system that can also be extended as the system grows, and to state how far each one is applied.
     \item To design and implement the security of the system: signing in, what each user may do, how their actions are recorded, and the security of the software the system runs on.
     \item To evaluate the security before deployment, using manual testing, automated scanning, and a separate assessment against the OWASP Application Security Verification Standard, and to record what was found.
@@ -57,8 +57,8 @@ This thesis is organised into seven chapters.
     \item Chapter \ref{chap:intro} introduces the setting, the hospital, the project, and the objectives of this work.
     \item Chapter \ref{chap:ps} describes the problem: how Guarantee of Payment requests were handled manually, what that cost the hospital, and which part of it this project addresses.
     \item Chapter \ref{chap:lr} reviews existing work on access control models, security standards for health information systems, threat modelling, and how access control is verified.
-    \item Chapter \ref{chap:met} sets out the method, including the frameworks applied and how far each one was used.
+    \item Chapter \ref{chap:met} sets out the method, including the stakeholder-driven process used to understand the workflow, the frameworks applied, and how far each one was used.
     \item Chapter \ref{chap:impl} describes what was built: how users are identified, the access control model, the audit trail, and the security of the deployment.
     \item Chapter \ref{chap:result} reports what the verification produced and discusses what those results mean.
-    \item Chapter \ref{chap:conclusion} covers the difficulties encountered, the conclusions drawn, and the work that remains.
+    \item Chapter \ref{chap:conclusion} covers the difficulties encountered, a reflection on what the placement changed personally, for the team, and for the hospital, the conclusions drawn, and the work that remains.
 \end{itemize}

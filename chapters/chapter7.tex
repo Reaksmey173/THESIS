@@ -9,13 +9,13 @@ This chapter covers the difficulties encountered during the security work, the c
 
 \subsection{Technical Challenges}
 
-\textbf{I started with no background and no map.} I had not built software before this project, so reading someone else's code and changing it safely were things I learned while doing them. Nor was there a structure to follow. At the beginning my learning was scattered, one topic, then another, in no order. What structure existed came later, from the frameworks in Chapter \ref{chap:met} and from asking the IT team, my mentor, my teammates and AI tooling.
+\textbf{I started with no background and no map.} I had not built software before this project, so reading someone else's code and changing it safely were things I learned while doing them. Nor was there a structure to follow. At the beginning my learning was scattered, one topic, then another, in no order. What structure existed came later, from the frameworks in Chapter \ref{chap:met}; Section \ref{sec:conc-reflection} reflects further on how that gap closed.
 
 \textbf{Security began after development.} A teammate wrote the application code first, because I was new to this area and the access rules were not ready, and the team could not wait. That was the right call for a six-month phase, but it set the method: I could not build access control from a written table, because the code already existed. I read the code, wrote down what it allowed each role to do, compared that against the workflow the team needed, and changed the code where they differed. A substantial number of rules did not match what the hospital wanted, and some expected actions did not exist at all.
 
 \textbf{The domain was entirely new.} Electronic medical records, the hospital's own information system, the FHIR standard, and how insurance approval works were all unfamiliar. Before any of us could start building, we spent weeks understanding the process itself, what the hospital already had, what they wanted, and how people actually worked. Access control cannot be designed without understanding the workflow it protects, so learning the domain was a prerequisite rather than background reading.
 
-\textbf{Evaluation used the time that implementation would have needed.} The team spent several months trialling Microsoft Entra ID before it was ruled out. When the hospital's IT team was consulted about the firewall rules Entra ID would need, it became clear the hospital did not want the system connected to the cloud at all. Keycloak was then deployed and learned from the beginning. Federation with the hospital's staff directory was delayed by the time spent on the Entra ID trial. It is now complete, and Section \ref{sec:impl-iam} describes the result.
+\textbf{Evaluation used the time that implementation would have needed.} The team spent several months trialling Microsoft Entra ID before it was ruled out; Section \ref{sec:conc-reflection} describes the decision itself. Federation with the hospital's staff directory was delayed by the time spent on that trial. It is now complete, and Section \ref{sec:impl-iam} describes the result.
 
 \textbf{Almost everything was designed by revision.} Access rules were built one at a time, decided, implemented, checked, and sometimes the requirement itself changed once people saw the result. The audit trail had no template at all: I decided what to record, revised it, took it to the IT head, revised again, researched, and revised once more. Verification behaved the same way, since each time I finished checking, a teammate found something that sent the work back round. The gaps recorded in Chapter \ref{chap:result} reflect a design arrived at by iteration rather than one worked out in advance.
 
@@ -78,7 +78,7 @@ What this project produced is therefore not a secure system but a documented one
 \section{Future Work}
 \label{sec:conc-future}
 
-Twenty-one items remain. For a reader who wants only the highest operational priorities before the full table: complete internal TLS between Keycloak, the application, and Active Directory; move Keycloak out of development mode; close the System Administrator write-access gap on clinical and cost data; add multi-factor authentication; automate security scanning in the build pipeline; and introduce monitoring and alerting on the audit and activity logs. Some items are not mine to decide. Setting the audit retention period, or deciding whether the disk should be encrypted, are choices for the hospital. Some need another team, such as the server administrator or Canadia Bank (IT security department), since they sit outside the application itself. The rest were within reach but ran out of time, and are left for the next phase.
+Twenty-three items remain. For a reader who wants only the highest operational priorities before the full table: complete internal TLS between Keycloak, the application, and Active Directory; move Keycloak out of development mode; close the System Administrator write-access gap on clinical and cost data; add multi-factor authentication; automate security scanning in the build pipeline; and introduce monitoring and alerting on the audit and activity logs. Some items are not mine to decide. Setting the audit retention period, or deciding whether the disk should be encrypted, are choices for the hospital. Some need another team, such as the server administrator or Canadia Bank (IT security department), since they sit outside the application itself. The rest were within reach but ran out of time, and are left for the next phase.
 
 \begin{longtable}{|p{0.6cm}|p{5.1cm}|p{2.5cm}|p{1.3cm}|p{4cm}|}
 \caption{Work remaining, by priority.}
@@ -103,7 +103,7 @@ Twenty-one items remain. For a reader who wants only the highest operational pri
 \hline
 3 & Add multi-factor authentication & Development & High & Security \\
 \hline
-4 & Close System Administrator's write access to clinical and cost data on two routes, since the design states this role should be view-only there; the audit log records these writes accurately but with no flag marking them as out-of-policy, unlike the system's other admin override actions, which are deliberately logged to stand out & Development & High & Security \\
+4 & Close System Administrator's write access to clinical and cost data on two routes, since the design says this role should be view-only there & Development & High & Security \\
 \hline
 5 & Hide raw error messages from users in production (ASVS F4) & Development & Medium & Security \\
 \hline
@@ -133,10 +133,14 @@ Twenty-one items remain. For a reader who wants only the highest operational pri
 \hline
 18 & Confirm whether Canadia Bank's container review specifically followed the CIS Docker Benchmark, or complete that comparison separately if not & Assessment & Low & Canadia Bank (IT security department) (reviewed), Hospital IT \\
 \hline
-19 & Make the Actor column match the Description text after someone renames & Design & Low & Security \\
+19 & Confirm whether Canadia Bank's penetration test specifically followed the OWASP Testing Guide, or complete that comparison separately if not & Assessment & Low & Canadia Bank (IT security department) (reviewed), Hospital IT \\
 \hline
-20 & Give the same ``not allowed'' message whether a case is real or fake & Design & Low & Security \\
+20 & Make the Actor column match the Description text after someone renames & Design & Low & Security \\
 \hline
-21 & Fully remove the developer sign-in shortcut's code, rather than leaving it present and flag-gated, so it cannot be reintroduced by a future configuration change & Development & Medium & Security \\
+21 & Give the same ``not allowed'' message whether a case is real or fake & Design & Low & Security \\
+\hline
+22 & Fully remove the developer sign-in shortcut's code, rather than leaving it present and flag-gated, so it cannot be reintroduced by a future configuration change & Development & Medium & Security \\
+\hline
+23 & Make the browser idle timer account for time elapsed while a tab was closed, rather than resetting to zero on reopen, since closing the tab currently gives no protection against a different person opening the browser soon after & Development & Medium & Security \\
 \hline
 \end{longtable}
